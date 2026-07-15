@@ -1,0 +1,38 @@
+{"steps": [
+    {
+        "instruction": "Identify the table and fields that store actor information, including their names and associated movies.",
+        "name": "get_actor_metadata",
+        "description": "Fetch metadata to identify actor-related tables and fields.",
+        "nextStep": ["find_actor_movies_table"],
+        "requiresInput": false,
+        "type": "LLM",
+        "tools": ["postgres.meta"]
+    },
+    {
+        "instruction": "Using the metadata, identify the table that links actors to movies and the relevant fields for actor name and movie details.",
+        "name": "find_actor_movies_table",
+        "description": "Determine the table linking actors to movies.",
+        "requiresInput": true,
+        "nextStep": ["query_actor_movies"],
+        "type": "LLM",
+        "tools": []
+    },
+    {
+        "instruction": "Write a query to fetch all movies featuring the actor 'Mohanlal' and sort them by release date in ascending order.",
+        "name": "query_actor_movies",
+        "description": "Query the database for movies featuring Mohanlal.",
+        "requiresInput": true,
+        "nextStep": ["extract_first_movie"],
+        "type": "LLM",
+        "tools": ["postgres.query"]
+    },
+    {
+        "instruction": "From the sorted list of movies featuring Mohanlal, extract the first movie.",
+        "name": "extract_first_movie",
+        "description": "Extract the first movie from the sorted list.",
+        "requiresInput": true,
+        "nextStep": [],
+        "type": "LLM",
+        "tools": []
+    }
+]}

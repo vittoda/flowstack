@@ -1,0 +1,45 @@
+plugins {
+    id 'application'
+    id 'org.springframework.boot' version '3.3.0' // Use latest
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'flowstack'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    implementation 'org.apache.logging.log4j:log4j-api:2.21.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.21.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation 'org.springframework:spring-websocket'
+    implementation 'org.springframework:spring-messaging'
+
+    implementation group: 'com.flowstack.channels', name: 'channels-base', version: '1.0.0'
+    implementation group: 'com.flowstack.channels', name: 'slack', version: '1.0.0'
+
+    implementation 'org.apache.derby:derby:10.17.1.0'
+    
+}
+
+ext {
+    javaMainClass = "com.flowstack.App"
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = javaMainClass
+}
+

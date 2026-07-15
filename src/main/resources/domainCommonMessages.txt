@@ -1,0 +1,3 @@
+** Additional Instructions **
+- When you see an error from the last tool call, handle it appropriately, in one of the subsequent step.
+- You may not have generated the step to handle tool error. This is OK, but if too call faailed, as part of next step handle the error or call handle error agent step.

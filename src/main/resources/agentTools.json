@@ -1,0 +1,66 @@
+{
+    "agent_runStep": {
+        "name": "agent_runStep",
+        "description": "Execute a specific step in the agent workflow",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "stepName": {
+                    "type": "string",
+                    "description": "Name of the step to execute"
+                }
+            },
+            "required": [
+                "stepName"
+            ]
+        }
+    },
+     "agent_runErrorStep": {
+        "name": "agent_runErrorStep",
+        "description": "Execute a error step in the agent workflow. It will always run",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "errorDetails": {
+                    "type": "string",
+                    "description": "Information for handling the error message. This will be passed along with instruction for the error step."
+                }
+            },
+            "required": [
+                "errorDetails"
+            ]
+        }
+    },
+     "agent_endFlow": {
+        "name": "agent_endFlow",
+        "description": "Last step of the flow. This tool will set the return value of the flow.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string",
+                    "description": "Result of the execution. This can be a string or an object converted to string"
+                }
+            },
+            "required": [
+                "result"
+            ]
+        }
+    },
+    "agent_sendMessage": {
+        "name": "agent_sendMessage",
+        "description": "Send message on the communication channel",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "Message text"
+                }
+            },
+            "required": [
+                "message"
+            ]
+        }
+    }
+}

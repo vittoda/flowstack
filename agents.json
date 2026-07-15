@@ -1,0 +1,186 @@
+{
+    "agents": [
+        {
+            "name": "Shell",
+            "id": "shell",
+            "description": "Shell commands",
+            "context": {
+                "file": "shellSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "shell"
+            ]
+        },
+        {
+            "name": "Shell and GMail",
+            "id": "shell_and_Gmail",
+            "description": "Shell and Gmail integration",
+            "context": {
+                "file": "shellAndGmailSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "shell",
+                "gmail"
+            ]
+        },
+        {
+            "name": "Google Calendar",
+            "id": "gcal",
+            "description": "Google Calendar Integration",
+            "context": {
+                "file": "gcalSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "gcal"
+            ]
+        },
+        {
+            "name": "Google Drive",
+            "id": "gdrive",
+            "description": "Google Drive Integration",
+            "context": {
+                "file": "gdriveSystemContext.txt"
+            },
+            "mcpServers": [
+                "gdrive"
+            ]
+        },
+        {
+            "name": "AWS S3",
+            "id": "aws-s3",
+            "description": "AWS S3 Integration",
+            "context": {
+                "file": "awss3SystemContext.txt"
+            },
+            "mcpServers": [
+                "aws-s3"
+            ]
+        },
+        {
+            "name": "SQLite",
+            "id": "sqlite",
+            "description": "SQLite Integration",
+            "context": {
+                "file": "sqliteContext.txt"
+            },
+            "hitlConfig" :{
+                "targets" : [
+                    {
+                        "type" : "webhook",
+                        "instance" : "http://localhost:8090/hil"
+                    },
+                    {
+                        "type" : "event"
+                    }
+                ]
+            },
+            "mcpServers": [
+                "sqlite"
+            ]
+        },
+        {
+            "name": "File system and GMail",
+            "id": "fs_and_Gmail",
+            "description": "File system and Gmail integration",
+            "context": {
+                "file": "fileSystemAndGmailSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "filesystem",
+                "gmail"
+            ],
+            "variables": [
+                {
+                    "name": "fullName",
+                    "label": "Full Name",
+                    "description": "Full name of the recipient"
+                },
+                {
+                    "name": "subject",
+                    "label": "Email Subject",
+                    "description": "Subject for the email"
+                },
+                {
+                    "name": "email",
+                    "label": "Email address",
+                    "description": "Email address recipient"
+                }
+            ]
+        },
+        {
+            "name": "SQLite and GMail",
+            "id": "sqlite_and_Gmail",
+            "description": "SQLite and Gmail integration",
+            "context": {
+                "file": "gmailAndSqliteContext.txt"
+            },
+            "hilWebhookURL": "http://localhost:8090/hil",
+            "mcpServers": [
+                "sqlite",
+                "gmail"
+            ],
+            "variables": [
+                {
+                    "name": "fullName",
+                    "label": "Full Name",
+                    "description": "Full name of the recipient"
+                },
+                 {
+                    "name": "subject",
+                    "label": "Email Subject",
+                    "description": "Subject for the email"
+                },
+                {
+                    "name": "email",
+                    "label": "Email address",
+                    "description": "Email address recipient"
+                }
+            ]
+        },
+        {
+            "name": "Slack",
+            "id": "slack",
+            "description": "Slack Integration",
+            "context": {
+                "file": "sqliteContext.txt"
+            },
+            "mcpServers": [
+                "slack"
+            ]
+        },
+        {
+            "name": "Jira",
+            "id": "jira",
+            "description": "Jira Integration",
+            "context": {
+                "file": "jiraAgent.txt"
+            },
+            "mcpServers": [
+                "jira"
+            ]
+        },
+        {
+            "name": "Event Agent",
+            "model" : "openai/gpt-4o",
+            "id": "eventAgent",
+            "description": "Agent that gets triggered as part of an event",
+            "context": {
+                "file": "eventAgent.txt"
+            },
+            "mcpServers" : [],
+            "agents" : ["slack","sqlite", "shell"],
+            "channels" : ["slack"]
+        },
+        {
+            "name": "OpenSearch Agent",
+            "model" : "gpt-4o",
+            "id": "opensearchAgent",
+            "description": "Agent that orchestrates opensearch operations.",
+            "context": {
+                "file": "opensearchAgent.txt"
+            },
+            "mcpServers" : ["opensearch"]
+        }
+        
+    ]
+}

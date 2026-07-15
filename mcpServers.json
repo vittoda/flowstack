@@ -1,0 +1,101 @@
+{
+    "mcpServers": [
+        {
+            "name": "postgres",
+            "category" : "DB",
+            "command" : "/usr/bin/java  -jar ${mcp.base}/postgres/build/libs/postgres-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "shell",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/shell/build/libs/shell-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "gmail",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/gmail/build/libs/gmail-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "gcal",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/gcal/build/libs/gcal-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "gdrive",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/gdrive/build/libs/gdrive-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "aws-s3",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/aws-s3/build/libs/aws-s3-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "filesystem",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/filesystem/build/libs/filesystem-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "sqlite",
+            "category" : "System",
+            "command" : "/usr/bin/java -DdataPath=/tmp -jar ${mcp.base}/sqlite/build/libs/sqlite-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "slack",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/slack/build/libs/slack-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "jira",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/jira/build/libs/jira-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "locationiq",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/locationIQ/build/libs/locationiq-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "opensearch",
+            "category" : "System",
+            "command" : "/usr/bin/java -Dopensearch.hosts=192.168.0.119:9200 -jar ${mcp.base}/opensearch/build/libs/opensearch-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        }
+    ]
+    
+}

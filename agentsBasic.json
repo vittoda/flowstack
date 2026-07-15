@@ -1,0 +1,61 @@
+{
+    "agents": [
+        {
+            "name": "Shell",
+            "id": "shell",
+            "description": "Shell commands",
+            "context": {
+                "file": "shellSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "shell"
+            ]
+        },
+        {
+            "name": "SQLite",
+            "id": "sqlite",
+            "description": "SQLite Integration",
+            "context": {
+                "file": "sqliteContext.txt"
+            },
+            "hitlConfig" :{
+                "targets" : [
+                    {
+                        "type" : "webhook",
+                        "instance" : "http://localhost:8090/hil"
+                    },
+                    {
+                        "type" : "event"
+                    }
+                ]
+            },
+            "mcpServers": [
+                "sqlite"
+            ]
+        },
+        
+        {
+            "name": "Event Agent",
+            "model" : "openai/gpt-4o",
+            "id": "eventAgent",
+            "description": "Agent that gets triggered as part of an event",
+            "context": {
+                "file": "eventAgent.txt"
+            },
+            "mcpServers" : [],
+            "agents" : ["slack","sqlite", "shell"],
+            "channels" : ["slack"]
+        },
+        {
+            "name": "OpenSearch Agent",
+            "model" : "openai/gpt-4o",
+            "id": "opensearchAgent",
+            "description": "Agent that orchestrates opensearch operations.",
+            "context": {
+                "file": "opensearchAgent.txt"
+            },
+            "mcpServers" : ["opensearch"]
+        }
+        
+    ]
+}
