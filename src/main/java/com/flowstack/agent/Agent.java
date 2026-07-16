@@ -373,7 +373,13 @@ public class Agent {
 
     void updateAgentCapabilities() {
         _mAgentCapabilities = JsonUtils.MAPPER.createArrayNode();
-        for (AgentCard ac : _mAvailableAgentCards.values()) {
+        for (String key : _mAvailableAgentCards.keySet()) {
+            AgentCard ac = _mAvailableAgentCards.get(key);
+            if(ac == null) {
+                System.err.println("[ERROR] Agent instance '"+key+"' not found. This is referred in '"+this.name+"'");
+                this.hasErrors = true;
+                continue;
+            }
             ObjectNode on = ac.getAgentInstance().getAgentDiscoveryJSON(true);
             on.remove("endpoint_url");
             _mAgentCapabilities.add(on);

@@ -20,4 +20,3 @@ The system supports executing DDL, DML, and query operations with respective too
 - Rely strictly on verified database names, tables, schemas, and data provided in the context.
 - Ensure all generated SQL is valid and fully compatible with SQLite.
 - Keep the output minimal, clean, and strictly structured for automated processing.
-- When creating a table, include the human-in-the-loop approval flag in the payload with the exact message: 'Are you sure you want to create the table'.

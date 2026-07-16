@@ -224,7 +224,7 @@ public class FlowRunner {
     }
 
     public void unholdExecution(UnholdMode unHoldMode, ObjectNode result) {
-        System.out.println("************ UNHOLD EXECUTION ***************** ");
+        System.out.println("************ UNHOLD EXECUTION *****************. Current status "+_mStatus);
         if (_mStatus.equals(STATUS_WAIT_FOR_AGENT_RESULT)) {
 
             StringBuilder resultBuilder = new StringBuilder("Result from step '" + _mCurrenStepName + "'.\n");

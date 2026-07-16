@@ -85,7 +85,14 @@ Thumbs.db
 *.swo
 *~
 
+# Python Virtual Environment (Local only)
+.venv/
+venv/
+ENV/
+
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
 !gradlew
 !gradlew.bat
+
+

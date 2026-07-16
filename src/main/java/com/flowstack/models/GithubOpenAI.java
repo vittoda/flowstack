@@ -11,4 +11,11 @@ public class GithubOpenAI extends OpenAI {
         return "flowstack.github.openai";
     }
 
+    @Override
+    protected String getURL() {
+        return "https://models.github.ai/inference/chat/completions";
+    }
+
+    
+
 }

@@ -1,0 +1,41 @@
+site_name: Flowstack Documentation
+site_description: An open-source Java-based AI agent orchestration framework.
+
+theme:
+  name: material
+  logo: assets/flow_stack.svg
+  favicon: assets/favicon.svg
+
+  font:
+    text: Poppins
+    code: JetBrains Mono
+    
+  palette:
+    # Auto-switch between light and dark modes based on system settings
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs        # Top level tabs
+    - navigation.sections    # Left sidebar collapsable sections
+    - navigation.indexes     # Direct landing pages for sections
+    - search.suggest         # Live search auto-complete
+    - search.highlight       # Highlight words searched
+
+# Define your navigation tree here
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md

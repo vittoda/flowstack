@@ -43,19 +43,8 @@
                 "file": "eventAgent.txt"
             },
             "mcpServers" : [],
-            "agents" : ["slack","sqlite", "shell"],
+            "agents" : ["sqlite", "shell"],
             "channels" : ["slack"]
-        },
-        {
-            "name": "OpenSearch Agent",
-            "model" : "openai/gpt-4o",
-            "id": "opensearchAgent",
-            "description": "Agent that orchestrates opensearch operations.",
-            "context": {
-                "file": "opensearchAgent.txt"
-            },
-            "mcpServers" : ["opensearch"]
         }
-        
     ]
 }

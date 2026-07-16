@@ -10,7 +10,7 @@ public class ModelConnectionRegistry {
 
     private static HashMap<String, ModelConnection> _mConnections = new HashMap<>();
 
-    private static String _mDefaultModelName = "gpt-4o";
+    private static String _mDefaultModelName = "openai/gpt-4o";
 
     public static final Date STARTUP_TIME = new Date();
 

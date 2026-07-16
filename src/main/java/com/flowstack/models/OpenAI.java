@@ -39,6 +39,10 @@ public class OpenAI extends ModelConnection {
         return "flowstack.openai";
     }
 
+    protected String getURL() {
+        return "https://api.openai.com/v1/chat/completions";
+    }
+
     @Override
     public ModelResponse sendRequest(FlowMemory memory,
             List<String> additionalSystemMessages,
@@ -142,7 +146,7 @@ public class OpenAI extends ModelConnection {
         System.err.println(request.toPrettyString());
         System.err.println("================================================================");
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.openai.com/v1/chat/completions"))
+                .uri(URI.create(getURL()))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getCred())
                 .POST(HttpRequest.BodyPublishers.ofString(request.toString()))

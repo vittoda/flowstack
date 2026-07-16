@@ -91,7 +91,7 @@
         {
             "name": "opensearch",
             "category" : "System",
-            "command" : "/usr/bin/java -Dopensearch.hosts=192.168.0.119:9200 -jar ${mcp.base}/opensearch/build/libs/opensearch-1.0.1-all.jar ",
+            "command" : "/usr/bin/java -Dopensearch.hosts=192.168.0.157:9200 -jar ${mcp.base}/opensearch/build/libs/opensearch-1.0.1-all.jar ",
             "connection": {
                 "type": "stdio"
             }

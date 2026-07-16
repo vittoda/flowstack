@@ -25,8 +25,12 @@ public class App {
     public static void main(String[] args) {
         try {
 
-            String mcpBase = System.getProperty("user.home")+"/projects/agent/mcp";
-            System.setProperty("mcp.base", mcpBase);
+            String mcpBase = System.getProperty("mcp.base", null);
+            if(mcpBase == null) {
+                mcpBase = System.getProperty("user.home")+"/projects/agent/mcp";
+                 System.setProperty("mcp.base", mcpBase);
+            }
+           
 
             String mcpConfigFile = System.getProperty("fs.mcpConfigFile");
             if(mcpConfigFile == null) {
@@ -56,12 +60,14 @@ public class App {
             MetricsDB.initialize();
 
             // Load the MCP servers and discover the tools.
+            System.out.println("Loading MCP config file '"+mcpConfigFile+"'");
             MCPRegistry.initialize(mcpConfigFile);
 
             FlowExecutionQueue.INSTANCE.startConsumer();
             ChannelRegistry.loadChannels();
             SpringApplication.run(App.class, args);
 
+            System.out.println("Loading Agent config file '"+agentsConfigFile+"'");
             AgentRegistry.loadFromFile(agentsConfigFile);
 
             // Register commands
