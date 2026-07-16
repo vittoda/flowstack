@@ -40,3 +40,6 @@ nav:
     - Installation: installation.md
     - Quick Start: quickstart.md
     - Configurations: configurations.md
+    - System Properties: systemproperties.md
+    - Local Key Manager: localkeymanager.md
+  - Architecture: architecture_home.md

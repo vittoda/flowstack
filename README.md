@@ -25,3 +25,5 @@ To start the server for development and testing, use the following command. Plea
 
 You will need [FlowStack UI](https://github.com/vittoda/flowstack_ui) to channels to trigger any action. Check the documentation on how to run the UI instance. 
 
+[Main Documentation](https://vittoda.github.io/flowstack/)
+
