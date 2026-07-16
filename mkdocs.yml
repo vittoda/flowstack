@@ -39,3 +39,4 @@ nav:
   - Getting Started:
     - Installation: installation.md
     - Quick Start: quickstart.md
+    - Configurations: configurations.md
