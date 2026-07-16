@@ -11,13 +11,18 @@ import com.flowstack.JsonUtils;
 import com.flowstack.mcp.MCPRegistry;
 import com.flowstack.mcp.ToolCallResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ModelResponseHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModelResponseHandler.class);
 
     public void process(StepRunInstance stepRunInstance, FlowRunner flowRunner,
             ModelResponse response) throws FlowException {
 
         if (response == null) {
-            System.err.println("[FLOW_STACK] ************ RESPONSE IS NULL **************** ");
+            LOGGER.warn("Response is null for session '{}', step '{}'", flowRunner.getSessionId(), stepRunInstance.getStepDefinition().name);
             flowRunner.currentStepFailed(StepRunInstance.FAIL_REASON_INVALID_RESPONSE, "No response from the model");
             return;
         }
@@ -40,9 +45,7 @@ public class ModelResponseHandler {
                 // TODO: The tools below should be specific to the flow runner ot step group.
                 ArrayNode validationErrors = sv.validate(steps, MCPRegistry.getAllToolNames());
                 if (validationErrors.size() > 0) {
-                    System.err.println("========================STEPS========================");
-                    System.err.println(steps.toPrettyString());
-                    System.err.println("=======================================================");
+                    LOGGER.error("Response validation failed. ", steps.toPrettyString());
                     flowRunner.currentStepFailed(StepRunInstance.FAIL_REASON_INVALID_RESPONSE,
                             validationErrors.toString());
                     return;
@@ -85,8 +88,7 @@ public class ModelResponseHandler {
                 flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
                 return;
             } else if (toolResponse.toolName.equals("agent_sendMessage")) {
-                System.out.println("**************** SENDING MESSAG *********************");
-                System.out.println(toolResponse.arguments);
+                LOGGER.info("Sending message on the channel. Message : {}", toolResponse.arguments.toPrettyString());
                 ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
                 ObjectNode r = flowRunner.sendResponse(toolResponse.arguments.get("message").asText());
                 toolResult.put("status","Success");
@@ -114,8 +116,8 @@ public class ModelResponseHandler {
             // Take the next step from current tool run step, and proceed.
             flowRunner.currentStepCompleted(true);
         } else {
-            System.out.println("\t\tInvalid response. " + response.getClass().getName() + " .\n"
-                    + response.assistantMessage.toPrettyString());
+            LOGGER.warn("Invalid response. '{}'. Content '{}]", response.getClass().getName() ,
+                    response.assistantMessage.toPrettyString());
             flowRunner.currentStepCompleted(true);
         }
     }

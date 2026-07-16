@@ -17,15 +17,22 @@ import com.flowstack.flow.FlowMemory;
 import com.flowstack.metrics.MetricsDB;
 import com.flowstack.metrics.MetricsException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Gemini extends ModelConnection {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Gemini.class);
 
     private static HttpClient _mClient = null;
     private static final int THROTTLE_ERROR_RETRY_COUNT = 2;
 
     private String _mModelName = null;
+    private boolean _mLogRequests = false;
 
     public Gemini(String modelName) {
         _mModelName = modelName;
+        _mLogRequests = System.getProperty("gemini", "false").equals("true");
     }
 
     @Override
@@ -141,9 +148,11 @@ public class Gemini extends ModelConnection {
             _mClient = HttpClient.newHttpClient();
         }
 
-        System.err.println("============================================= REQ");
-        System.err.println(req.toPrettyString());
-        System.err.println("=============================================");
+        if (_mLogRequests) {
+            LOGGER.info("================================= REQUEST ======================");
+            LOGGER.info(req.toPrettyString());
+            LOGGER.info("================================================================");
+        }
         String URL = "https://generativelanguage.googleapis.com/v1beta/models/" + _mModelName
                 + ":generateContent?key="
                 + key;
@@ -166,7 +175,7 @@ public class Gemini extends ModelConnection {
             try {
                 MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
             } catch (MetricsException e) {
-                System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                LOGGER.warn("Error saving token metric." , e.getMessage());
             }
 
             if (statusCode == 429 || statusCode == 503) {
@@ -182,7 +191,7 @@ public class Gemini extends ModelConnection {
                     try {
                         MetricsDB.addRequestMetricForModel(URL, requestStartTime, endTime, statusCode);
                     } catch (MetricsException e) {
-                        System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                        LOGGER.warn("Error saving token metric." , e.getMessage());
                     }
                     retryCount++;
                     timerMultiplier++;
@@ -231,7 +240,7 @@ public class Gemini extends ModelConnection {
             try {
                 MetricsDB.addTokenMetric(_mModelName, inputTokenSize, outputTokenSize);
             } catch (Exception e) {
-                System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                LOGGER.warn("Error saving token metric." , e.getMessage());
             }
         }
 
@@ -254,9 +263,6 @@ public class Gemini extends ModelConnection {
 
         // We will use only one text respinse. Not sure on what case it will have more.
         ObjectNode part = (ObjectNode) parts.get(0);
-        System.err.println("============================================= PART");
-        System.err.println(part.toPrettyString());
-        System.err.println("=============================================");
         if (part.has("text")) {
             String m = part.get("text").asText();
             memory.addContent(new ModelAssistantMessage(m, null));
@@ -266,9 +272,9 @@ public class Gemini extends ModelConnection {
                         m = m.substring(7, m.length() - 3);
                     }
                     ObjectNode contentJSON = (ObjectNode) JsonUtils.MAPPER.readTree(m);
-                    System.err.println("========================== CONTENT =========================");
-                    System.err.println(contentJSON.toPrettyString());
-                    System.err.println("============================================================");
+                    LOGGER.info("================================= CONTENT ======================");
+                    LOGGER.info(contentJSON.toPrettyString());
+                    LOGGER.info("================================================================");
 
                     return new ModelJSONResponse(part, contentJSON);
                 } catch (JsonProcessingException e) {
@@ -276,7 +282,6 @@ public class Gemini extends ModelConnection {
                             "Error parsing the response as JSON from the model. Message recieved : " + m);
                 }
             }
-            System.err.println("========================== " + jsonRespnse);
             return new ModelTextResponse(part, m);
         } else if (part.has("functionCall")) {
             ObjectNode functionCall = (ObjectNode) part.get("functionCall");

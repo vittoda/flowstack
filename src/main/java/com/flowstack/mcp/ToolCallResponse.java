@@ -5,7 +5,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ToolCallResponse {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ToolCallResponse.class);
 
     public enum ToolCallStatus {
         SUCCESS,
@@ -41,12 +46,12 @@ public class ToolCallResponse {
         } else {
             res.status = ToolCallStatus.SUCCESS;
             if((!r.has("result")) || r.get("result").isNull()) {
-                System.err.println("===================\n"+r.toPrettyString()+"\n====================");
+                LOGGER.warn("Tool response '{}'",r.toPrettyString());
                 throw new MCPException("Tool call suceeded. But respnse did not have any 'result' field");
             }
             ObjectNode resultNode = (ObjectNode)r.get("result");
             if((!resultNode.has("content")) || resultNode.get("content").isNull()) {
-                System.err.println("===================\n"+r.toPrettyString()+"\n====================");
+                LOGGER.warn("Tool response '{}'",r.toPrettyString());
                 throw new MCPException("Tool call suceeded. But respnse did not have any 'content' field inside 'result' node");
             }
             ArrayNode contents = (ArrayNode)resultNode.get("content");
@@ -63,7 +68,7 @@ public class ToolCallResponse {
             try {
                 res._mResult = (ObjectNode) JsonUtils.MAPPER.readTree(textNode.textValue());
             } catch (Exception e) {
-                System.err.println("[WARNING] Not able to parse the content as JSON. Passing it as it is t");
+                LOGGER.warn("Not able to parse the content as JSON. Passing it as it is");
                 res._mResult = textNode;
             }
         }

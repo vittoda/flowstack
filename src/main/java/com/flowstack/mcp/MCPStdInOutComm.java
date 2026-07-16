@@ -12,7 +12,12 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MCPStdInOutComm extends MCPComm {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MCPStdInOutComm.class);
 
     private String _mCommand = null;
     private Process _mProcess = null;
@@ -20,9 +25,11 @@ public class MCPStdInOutComm extends MCPComm {
     private InputStream _mInputStream = null;
     private InputStream _mErrorStream = null;
     private BufferedReader _mReader = null;
+    private String _mServerName = null;
 
-    public MCPStdInOutComm(String command) {
+    public MCPStdInOutComm(String command, String serverName) {
         _mCommand = command;
+        _mServerName = serverName;
     }
 
     @Override
@@ -99,7 +106,7 @@ public class MCPStdInOutComm extends MCPComm {
                 if (line == null) {
                     break;
                 }
-                System.err.println("[ERROR] " + line);
+                LOGGER.error("Error line from MCP server '{}' : {} ",_mServerName , line);
             }
 
         } catch (IOException e) {

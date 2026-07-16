@@ -22,7 +22,12 @@ import com.flowstack.models.ModelSystemMessage;
 import com.flowstack.models.ModelUserMessage;
 import com.flowstack.models.ToolResponseMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FlowRunner {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlowRunner.class);
 
     public static final String STATUS_RUNNING = "Running";
     public static final String STATUS_ABORTED = "Aborted";
@@ -194,7 +199,7 @@ public class FlowRunner {
 
     private void completed() {
         // Check if we have session to notify before
-        System.out.println("Flow completed. To notify " + _mFlowSessionToNotify);
+        LOGGER.info("Flow completed. To notify '{}'", _mFlowSessionToNotify);
         if (!_mStatus.equals(STATUS_FAILED)) {
             _mStatus = STATUS_SUCCESS;
         }
@@ -224,7 +229,7 @@ public class FlowRunner {
     }
 
     public void unholdExecution(UnholdMode unHoldMode, ObjectNode result) {
-        System.out.println("************ UNHOLD EXECUTION *****************. Current status "+_mStatus);
+        LOGGER.info("Unhold the flow. '{}'", _mSessionId);
         if (_mStatus.equals(STATUS_WAIT_FOR_AGENT_RESULT)) {
 
             StringBuilder resultBuilder = new StringBuilder("Result from step '" + _mCurrenStepName + "'.\n");
@@ -376,7 +381,7 @@ public class FlowRunner {
         // Find the error step and run. But if it is unrecoverable error, we need to
         // exit now.
         if (!failReason.equals(StepRunInstance.FAIL_REASON_NON_RECOVERABLE_ERROR)) {
-            System.err.println("There was an error : " + errorMessage);
+            LOGGER.warn("Flow failed with non-recoverable error. Message : {}" , errorMessage);
             runErrorStep();
         } else {
             // Notify if anyone is listenening.
@@ -442,7 +447,7 @@ public class FlowRunner {
             } catch (Exception e) {
                 //Ignore, as one might fail and other might siceed.
                 //TODO: Handle if all failed.
-                System.err.println("Error in HITL request: "+e.getMessage());
+                LOGGER.error("Error in submitting HITL request",e);
             }
         }
 

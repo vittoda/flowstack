@@ -34,7 +34,7 @@ public class MCPServer {
         if (_mConnectionType.equals("websocket")) {
             conn = new MCPWebsocketComm(_mURL);
         } else if (_mConnectionType.equals("stdio")) {
-            conn = new MCPStdInOutComm(_mCommand);
+            conn = new MCPStdInOutComm(_mCommand, this.name);
         }
 
         return conn;

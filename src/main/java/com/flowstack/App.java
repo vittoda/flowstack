@@ -19,8 +19,13 @@ import com.flowstack.mcp.MCPRegistry;
 import com.flowstack.metrics.MetricsDB;
 import com.flowstack.models.ModelConnectionRegistry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SpringBootApplication
 public class App {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         try {
@@ -38,7 +43,7 @@ public class App {
             }
 
             if(!Files.exists(Paths.get(mcpConfigFile))) {
-                System.err.println("[ERROR] MCP config file is not defined. Use system property 'fs.mcpConfigFile' to set the MCP config file, or, save the config file as 'mcpServers.json' in current folder.");
+                LOGGER.error("MCP config file is not defined. Use system property 'fs.mcpConfigFile' to set the MCP config file, or, save the config file as 'mcpServers.json' in current folder.");
                 return;
             }
 
@@ -48,7 +53,7 @@ public class App {
             }
 
             if(!Files.exists(Paths.get(agentsConfigFile))) {
-                System.err.println("[ERROR] Agent config file is not defined. Use system property 'fs.agentsConfigFile' to set the Agents config file, or, save the config file as 'agents.json' in current folder.");
+                LOGGER.error("[ERROR] Agent config file is not defined. Use system property 'fs.agentsConfigFile' to set the Agents config file, or, save the config file as 'agents.json' in current folder.");
                 return;
             }
 
@@ -60,14 +65,14 @@ public class App {
             MetricsDB.initialize();
 
             // Load the MCP servers and discover the tools.
-            System.out.println("Loading MCP config file '"+mcpConfigFile+"'");
+            LOGGER.info("Loading MCP config file '{}'",mcpConfigFile);
             MCPRegistry.initialize(mcpConfigFile);
 
             FlowExecutionQueue.INSTANCE.startConsumer();
             ChannelRegistry.loadChannels();
             SpringApplication.run(App.class, args);
 
-            System.out.println("Loading Agent config file '"+agentsConfigFile+"'");
+            LOGGER.info("Loading Agent config file '{}'",agentsConfigFile);
             AgentRegistry.loadFromFile(agentsConfigFile);
 
             // Register commands

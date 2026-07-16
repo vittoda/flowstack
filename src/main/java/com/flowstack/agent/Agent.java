@@ -38,9 +38,14 @@ import com.flowstack.mcp.MCPServerInstance;
 import com.flowstack.models.ModelConnectionRegistry;
 import com.flowstack.models.ModelSystemMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Agent {
 
     private static final String AGENT_BASE_URL = "http://localhost:8080/fs/api/v1/agent/a2a";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Agent.class);
 
     // Configs
     private ObjectNode _mSystemDef = null;
@@ -249,7 +254,6 @@ public class Agent {
                         channelInstance.registerOnMessageHandler(new OnMessageHandler() {
                             @Override
                             public OutputMessage onMessageReceived(InputMessage msg) {
-                                System.out.println("*** Message at agent " + msg.getText());
                                 // Check if we have received, a response for HIL
                                 String m = msg.getText().stripLeading();
                                 if (m.startsWith("{")) {
@@ -271,8 +275,8 @@ public class Agent {
                                          * This is a big problem, as it will trigger new agent, even if it is mean to
                                          * unhold a flow.
                                          */
-                                        System.err.println(
-                                                "[ERROR] Response recieved from channel has parsing errors as JSON. Skipping rest of the processing");
+                                        LOGGER.error(
+                                                "Response recieved from channel has parsing errors as JSON. Skipping rest of the processing",e);
                                     }
                                 }
                                 String userMessage = "Message Source : communication channel event\n\n" + m;
@@ -358,7 +362,7 @@ public class Agent {
                 _mMCPServers.put(serverName, instance);
             }
             else {
-                System.err.println("[ERROR] Agent initialization error. MCP server '"+serverName+"' not found.");
+                LOGGER.error("Agent initialization error. MCP server '{}'' not found", serverName);
             }
 
         }
@@ -376,7 +380,7 @@ public class Agent {
         for (String key : _mAvailableAgentCards.keySet()) {
             AgentCard ac = _mAvailableAgentCards.get(key);
             if(ac == null) {
-                System.err.println("[ERROR] Agent instance '"+key+"' not found. This is referred in '"+this.name+"'");
+                LOGGER.error("Agent instance '{}' not found. This is referred in '{}'", key ,this.name);
                 this.hasErrors = true;
                 continue;
             }

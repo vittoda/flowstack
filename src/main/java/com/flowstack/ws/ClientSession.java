@@ -9,7 +9,12 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ClientSession {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientSession.class);
 
     String clientId = null;
     WebSocketSession websocketSession = null;
@@ -51,10 +56,10 @@ public class ClientSession {
             try {
                 this.websocketSession.sendMessage(new TextMessage(message));
             } catch (IOException e) {
-                System.err.println("Error sending message to client " + clientId + ": " + e.getMessage());
+                LOGGER.error("Error sending message to client '{}'." , clientId,e);
             }
         } else {
-            System.out.println("Client " + clientId + " is not connected.");
+            LOGGER.info("Client '{}' is not connected.", clientId);
         }
     }
     

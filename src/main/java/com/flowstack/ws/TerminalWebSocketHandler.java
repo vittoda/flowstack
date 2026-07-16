@@ -15,8 +15,13 @@ import com.flowstack.cli.CliCommandRegistry;
 import com.flowstack.flow.FlowRunner.UnholdMode;
 import com.flowstack.flow.FlowRunnerSessions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class TerminalWebSocketHandler extends TextWebSocketHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TerminalWebSocketHandler.class);
 
     // Holds the session connection info mapped by a unique User/Client ID
 
@@ -37,7 +42,7 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
         if (clientId != null) {
             ClientSession cl = new ClientSession(clientId, session);
             WSClientSessionCache.add(cl);
-            System.out.println("Connection established with client: " + clientId);
+            LOGGER.info("Connection established with client '{}'" , clientId);
             ObjectNode result = JsonUtils.MAPPER.createObjectNode();
             result.put("status", "success");
             result.put("message", "Version : 1.1.0");
@@ -52,7 +57,6 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String clientId = _getClientId(session);
         String payload = message.getPayload();
-        System.out.println("Received message from " + clientId + ": " + payload);
         ObjectNode node = (ObjectNode) JsonUtils.MAPPER.readTree(payload);
         String commandName = node.get("command").asText();
         if(commandName.equals(USER_RESPONSE_COMMAND)) {
@@ -136,7 +140,7 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
         String clientId = _getClientId(session);
         if (clientId != null) {
             WSClientSessionCache.remove(clientId);
-            System.out.println("Connection closed for client: " + clientId);
+            LOGGER.info("Connection closed for client '{}", clientId);
         }
     }
 

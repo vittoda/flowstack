@@ -13,7 +13,12 @@ import com.flowstack.models.ModelNonRecoverableException;
 import com.flowstack.models.ModelResponse;
 import com.flowstack.models.ToolMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StepRunInstance {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StepRunInstance.class);
 
     public static final String STATUS_WAITING = "Waiting";
     public static final String STATUS_RUNNING = "Running";
@@ -105,7 +110,7 @@ public class StepRunInstance {
                 prepareAgentStep();
                 break;
             default:
-                System.err.println("[FLOW_STACK] Unknown step type '" + _mStepDefinition.type + "'");
+                LOGGER.error("Unknown step type '{}'", _mStepDefinition.type);
                 if (_mRunLogItem != null) {
                     _mRunLogItem.update(STATUS_FAILED, FAIL_REASON_INVALID_STEP);
                 }
@@ -187,7 +192,7 @@ public class StepRunInstance {
 
     public void runNow() {
         // Check if this step needs
-        System.err.println(" Running .............. " + _mStepDefinition.name);
+        LOGGER.info("Running step '{}'", _mStepDefinition.name);
         if (this._mNeedHIL) {
             try {
                 _mStatus = STATUS_HUMAN_IN_LOOP;

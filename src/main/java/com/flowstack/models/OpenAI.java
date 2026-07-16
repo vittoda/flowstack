@@ -18,7 +18,12 @@ import com.flowstack.flow.FlowMemory;
 import com.flowstack.metrics.MetricsDB;
 import com.flowstack.metrics.MetricsException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class OpenAI extends ModelConnection {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAI.class);
 
     private static HttpClient _mClient = null;
 
@@ -27,8 +32,11 @@ public class OpenAI extends ModelConnection {
     private String _mModelName = null;
     private double _mTemperature = 0.2;
 
+    private boolean _mLogRequests = false;
+
     public OpenAI(String modelName) {
         _mModelName = modelName;
+        _mLogRequests = System.getProperty("openAI.model.logRequests", "false").equals("true");
     }
 
     protected String getCred() {
@@ -37,6 +45,10 @@ public class OpenAI extends ModelConnection {
 
     protected String getCredKey() {
         return "flowstack.openai";
+    }
+
+    protected boolean logRequests() {
+        return _mLogRequests;
     }
 
     protected String getURL() {
@@ -52,7 +64,8 @@ public class OpenAI extends ModelConnection {
         String key = getCred();
         if (key == null) {
             throw new ModelException(
-                    "Access key not found. Get the access key and add it at ~/.fskeys. Use the key  '"+getCredKey()+"'");
+                    "Access key not found. Get the access key and add it at ~/.fskeys. Use the key  '" + getCredKey()
+                            + "'");
         }
 
         ObjectNode request = JsonUtils.MAPPER.createObjectNode();
@@ -142,9 +155,11 @@ public class OpenAI extends ModelConnection {
         if (_mClient == null) {
             _mClient = HttpClient.newHttpClient();
         }
-        System.err.println("================================= REQUEST ======================");
-        System.err.println(request.toPrettyString());
-        System.err.println("================================================================");
+        if (_mLogRequests) {
+            LOGGER.info("================================= REQUEST ======================");
+            LOGGER.info(request.toPrettyString());
+            LOGGER.info("================================================================");
+        }
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(getURL()))
                 .header("Content-Type", "application/json")
@@ -164,7 +179,7 @@ public class OpenAI extends ModelConnection {
             try {
                 MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
             } catch (MetricsException e) {
-                System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                LOGGER.warn("Error saving token metric. " , e.getMessage());
             }
 
             if (statusCode == 429 || statusCode == 503) {
@@ -180,7 +195,7 @@ public class OpenAI extends ModelConnection {
                     try {
                         MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
                     } catch (MetricsException e) {
-                        System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                        LOGGER.warn("Error saving token metric. " , e.getMessage());
                     }
                     retryCount++;
                     timerMultiplier++;
@@ -230,16 +245,19 @@ public class OpenAI extends ModelConnection {
             try {
                 MetricsDB.addTokenMetric(_mModelName, inputTokenSize, outputTokenSize);
             } catch (Exception e) {
-                System.err.println("[FS-ERROR] :  Error saving token metric. " + e.getMessage());
+                LOGGER.warn("Error saving token metric. " , e.getMessage());
             }
         }
         if (!response.has("choices")) {
             return null;
         }
 
-        System.err.println("================================= RESPONSE ======================");
-        System.err.println(response.toPrettyString());
-        System.err.println("================================================================");
+        if (_mLogRequests) {
+            LOGGER.info("================================ RESPONSE ======================");
+            LOGGER.info(response.toPrettyString());
+            LOGGER.info("================================================================");
+        }
+
 
         ArrayNode choices = (ArrayNode) response.get("choices");
         ObjectNode choice = (ObjectNode) choices.get(0); // Asume I will get at least one.
@@ -279,9 +297,7 @@ public class OpenAI extends ModelConnection {
                 } catch (JsonProcessingException e) {
                     throw new ModelException(e);
                 }
-            } else {
-                System.out.println("We have jsonRespnse=false, hence not parsing as JSON");
-            }
+            } 
 
             return new ModelTextResponse(message, m);
 

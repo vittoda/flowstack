@@ -27,10 +27,13 @@ dependencies {
     implementation 'org.springframework:spring-websocket'
     implementation 'org.springframework:spring-messaging'
 
+    implementation 'org.apache.derby:derby:10.17.1.0'
+
+    // Local dependencies
     implementation group: 'com.flowstack.channels', name: 'channels-base', version: '1.0.0'
     implementation group: 'com.flowstack.channels', name: 'slack', version: '1.0.0'
 
-    implementation 'org.apache.derby:derby:10.17.1.0'
+    
     
 }
 

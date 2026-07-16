@@ -11,7 +11,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class AgentRegistry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentRegistry.class);
 
     private static HashMap<String, AgentCard> _mAgents = new HashMap<>();
 
@@ -82,7 +88,7 @@ public class AgentRegistry {
                     agentInstance.loadAgentFromJSON(agentNode, file);
                 } catch (IOException e) {
                     //For some reason, this agent could not be loaded. Abort and proceed with next
-                    System.err.println("[ERROR] Error loading agent : "+e.getMessage());
+                    LOGGER.error("Error loading agent",e);
                     continue;
                 }
                 if (overrides != null && overrides.has(agentInstance.id)) {

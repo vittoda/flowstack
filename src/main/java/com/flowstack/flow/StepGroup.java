@@ -22,11 +22,6 @@ public class StepGroup {
         _mSteps.put(step.name, step);
     }
 
-    void printAllSteps() {
-        for(String key : _mSteps.keySet()) {
-            System.err.println("\t"+key);
-        }
-    }
 
     public Step addSteps(ArrayNode steps, String agentDefaultModelName) {
         int len = steps.size();
