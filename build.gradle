@@ -32,6 +32,7 @@ dependencies {
     // Local dependencies
     implementation group: 'com.flowstack.channels', name: 'channels-base', version: '1.0.0'
     implementation group: 'com.flowstack.channels', name: 'slack', version: '1.0.0'
+    implementation group: 'com.flowstack.channels', name: 'gmail', version: '1.0.0'
 
     
     

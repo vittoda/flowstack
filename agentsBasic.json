@@ -44,7 +44,7 @@
             },
             "mcpServers" : [],
             "agents" : ["sqlite", "shell"],
-            "channels" : ["slack"]
+            "channels" : ["slack","gmail"]
         }
     ]
 }

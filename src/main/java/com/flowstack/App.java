@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 
 import com.flowstack.agent.AgentRegistry;
 import com.flowstack.channels.ChannelRegistry;
@@ -31,32 +32,51 @@ public class App {
         try {
 
             String mcpBase = System.getProperty("mcp.base", null);
-            if(mcpBase == null) {
-                mcpBase = System.getProperty("user.home")+"/projects/agent/mcp";
-                 System.setProperty("mcp.base", mcpBase);
+            if (mcpBase == null) {
+                mcpBase = System.getProperty("user.home") + "/projects/agent/mcp";
+                System.setProperty("mcp.base", mcpBase);
             }
-           
 
             String mcpConfigFile = System.getProperty("fs.mcpConfigFile");
-            if(mcpConfigFile == null) {
-                mcpConfigFile = "."+File.separator+"mcpServers.json";
+            if (mcpConfigFile == null) {
+                mcpConfigFile = "." + File.separator + "mcpServers.json";
             }
 
-            if(!Files.exists(Paths.get(mcpConfigFile))) {
-                LOGGER.error("MCP config file is not defined. Use system property 'fs.mcpConfigFile' to set the MCP config file, or, save the config file as 'mcpServers.json' in current folder.");
+            if (!Files.exists(Paths.get(mcpConfigFile))) {
+                LOGGER.error(
+                        "MCP config file is not defined. Use system property 'fs.mcpConfigFile' to set the MCP config file, or, save the config file as 'mcpServers.json' in current folder.");
                 return;
+            }
+
+            String channelInstanceDefinitionFile = System.getProperty("fs.channelsConfigFile");
+            if (channelInstanceDefinitionFile == null) {
+                channelInstanceDefinitionFile = "." + File.separator + "channelsConfig.json";
+                if (!Files.exists(Paths.get(channelInstanceDefinitionFile))) {
+                    LOGGER.warn(
+                            "Channel instance configuration file '{}' does not exist. Channels will not be avaolable.",
+                            channelInstanceDefinitionFile);
+                    channelInstanceDefinitionFile = null;
+                    return;
+                }
+            } else {
+                // Check if the file exists
+                if (!Files.exists(Paths.get(channelInstanceDefinitionFile))) {
+                    LOGGER.error("Channel instance configuration file '{}' does not exist.",
+                            channelInstanceDefinitionFile);
+                    return;
+                }
             }
 
             String agentsConfigFile = System.getProperty("fs.agentsConfigFile");
-            if(agentsConfigFile == null) {
-                agentsConfigFile = "."+File.separator+"agents.json";
+            if (agentsConfigFile == null) {
+                agentsConfigFile = "." + File.separator + "agents.json";
             }
 
-            if(!Files.exists(Paths.get(agentsConfigFile))) {
-                LOGGER.error("[ERROR] Agent config file is not defined. Use system property 'fs.agentsConfigFile' to set the Agents config file, or, save the config file as 'agents.json' in current folder.");
+            if (!Files.exists(Paths.get(agentsConfigFile))) {
+                LOGGER.error(
+                        "[ERROR] Agent config file is not defined. Use system property 'fs.agentsConfigFile' to set the Agents config file, or, save the config file as 'agents.json' in current folder.");
                 return;
             }
-
 
             // Load Keys
             Keys.loadKeys();
@@ -65,14 +85,19 @@ public class App {
             MetricsDB.initialize();
 
             // Load the MCP servers and discover the tools.
-            LOGGER.info("Loading MCP config file '{}'",mcpConfigFile);
+            LOGGER.info("Loading MCP config file '{}'", mcpConfigFile);
             MCPRegistry.initialize(mcpConfigFile);
+
+            if (channelInstanceDefinitionFile != null) {
+                LOGGER.info("Loading Channel instances config file '{}'", channelInstanceDefinitionFile);
+                ChannelRegistry.loadChannelDefinitions(channelInstanceDefinitionFile);
+            }
 
             FlowExecutionQueue.INSTANCE.startConsumer();
             ChannelRegistry.loadChannels();
             SpringApplication.run(App.class, args);
 
-            LOGGER.info("Loading Agent config file '{}'",agentsConfigFile);
+            LOGGER.info("Loading Agent config file '{}'", agentsConfigFile);
             AgentRegistry.loadFromFile(agentsConfigFile);
 
             // Register commands

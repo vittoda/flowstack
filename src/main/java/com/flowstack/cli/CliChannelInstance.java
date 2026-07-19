@@ -1,7 +1,6 @@
 package com.flowstack.cli;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,16 +15,13 @@ import com.flowstack.ws.WSClientSessionCache;
 
 public class CliChannelInstance implements CommChannelInstance {
 
-    private HashMap<String, AgentCliCommMessageHandler> _mMessageHandlers = new HashMap<>();
+    private AgentCliCommMessageHandler _mAgentMessageHandler = null;
 
-    public void messageReceived(String clientId, String agentId, String message, ObjectNode options) {
+    public void messageReceived(String clientId, String message, ObjectNode options) {
         CliInputMessage ic = new CliInputMessage(message, clientId, options);
-        AgentCliCommMessageHandler handler = _mMessageHandlers.get(agentId);
-        if (handler != null) {
-            OutputMessage om = handler.onMessageReceived(ic);
-            if(om != null) {
-                WSClientSessionCache.get(clientId).sendMessageToClient(om.getText());
-            }
+        OutputMessage om = _mAgentMessageHandler.onMessageReceived(ic);
+        if (om != null) {
+            WSClientSessionCache.get(clientId).sendMessageToClient(om.getText());
         }
     }
 
@@ -57,8 +53,7 @@ public class CliChannelInstance implements CommChannelInstance {
     @Override
     public void registerOnMessageHandler(OnMessageHandler handler) {
         if (handler instanceof AgentCliCommMessageHandler) {
-            AgentCliCommMessageHandler ah = (AgentCliCommMessageHandler) handler;
-            _mMessageHandlers.put(ah.agent.id, ah);
+            _mAgentMessageHandler = (AgentCliCommMessageHandler) handler;
             return;
         }
         throw new UnsupportedOperationException(
@@ -69,19 +64,17 @@ public class CliChannelInstance implements CommChannelInstance {
     public void initialize() throws CommChannelException {
     }
 
-
     @Override
-    public void getConfirmationResponse(MessageContext context, String message, String responseKey, String requestId) throws CommChannelException  {
+    public void getConfirmationResponse(MessageContext context, String message, String responseKey, String requestId)
+            throws CommChannelException {
         CliMessageContext ctx = (CliMessageContext) context;
         ObjectNode messageObject = JsonUtils.MAPPER.createObjectNode();
-        messageObject.put("type" , "userConfirmation");
+        messageObject.put("type", "userConfirmation");
         messageObject.put("message", message);
         messageObject.put("responseKey", responseKey);
         messageObject.put("requestId", requestId);
 
         WSClientSessionCache.get(ctx.clientId).sendMessageToClient(messageObject.toString());
     }
-
-    
 
 }

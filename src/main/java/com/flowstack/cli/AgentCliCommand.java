@@ -83,8 +83,8 @@ public class AgentCliCommand extends CliCommand {
                 }
 
                 String prompt = params;
-                CliChannelInstance cl = (CliChannelInstance) CliChannel.INSTANCE.createInstance();
-                cl.messageReceived(session.getClientId(), agentId, prompt, options);
+                CliChannelInstance cl = (CliChannelInstance) CliChannel.INSTANCE.getInstance(agentId);
+                cl.messageReceived(session.getClientId(),  prompt, options);
 
                 resp.put("status", "success");
                 resp.put("type", "done");

@@ -14,7 +14,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
+import com.flowstack.api.channel.RestChannel;
+import com.flowstack.api.channel.RestChannelInstance;
 import com.flowstack.channels.ChannelRegistry;
+import com.flowstack.channels.base.CommChannelBase;
 import com.flowstack.channels.base.CommChannelException;
 import com.flowstack.channels.base.CommChannelInstance;
 import com.flowstack.channels.base.InputMessage;
@@ -187,7 +190,6 @@ public class Agent {
                 mcpServers.add(n);
             }
             node.set("mcpServers", mcpServers);
-
         }
 
         return node;
@@ -245,10 +247,10 @@ public class Agent {
         if (an.has("channels")) {
             ArrayNode channels = (ArrayNode) an.get("channels");
             for (int i = 0; i < channels.size(); i++) {
-                String key = channels.get(i).asText();
-                CommChannelInstance channelInstance = ChannelRegistry.getInstanceFor(key);
+                String channelInstanceId = channels.get(i).asText();
+                CommChannelInstance channelInstance = ChannelRegistry.createInstanceFor(channelInstanceId, this.id);
                 if (channelInstance != null) {
-                    String name = ChannelRegistry.getNameFor(key);
+                    CommChannelBase channel = ChannelRegistry.getChannelFor(channelInstanceId);
                     try {
                         channelInstance.initialize();
                         channelInstance.registerOnMessageHandler(new OnMessageHandler() {
@@ -292,11 +294,11 @@ public class Agent {
                             }
                         });
 
-                        _mChannels.put(name, new AgentCommChannel(key, name, false));
+                        _mChannels.put(name, new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(), false));
                     } catch (CommChannelException e) {
                         e.printStackTrace();
                         hasErrors = true;
-                        _mChannels.put(name, new AgentCommChannel(key, name, true));
+                        _mChannels.put(name, new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(),true));
                     } catch (Exception e) {
                         e.printStackTrace();
                         hasErrors = true;
@@ -306,9 +308,13 @@ public class Agent {
             }
         }
 
-        // Register CLI channel
-        CommChannelInstance cl = CliChannel.INSTANCE.createInstance();
+        // Add CLI channel
+        CommChannelInstance cl = CliChannel.INSTANCE.createInstance(this.id, null);
         cl.registerOnMessageHandler(new AgentCliCommMessageHandler(this, cl));
+
+        // Add REST channel
+        CommChannelInstance ri = RestChannel.INSTANCE.createInstance(this.id, null);
+        ri.registerOnMessageHandler(new AgentRestMessageHandler(this, cl));
 
         if (an.has("agents")) {
             // For now, just add the agent names. We will load agent definition later.
@@ -531,21 +537,24 @@ public class Agent {
     // This is just a wrapper class
     private class AgentCommChannel {
 
-        private String _mKey = null;
-        private String _mName = null;
+        private String _mChannelInstanceId = null;
+        private String _mChannelKey = null;
+        private String _mChannelName = null;
         private boolean _mHasErrors = false;
 
-        public AgentCommChannel(String key, String name, boolean hasErrors) {
-            _mKey = key;
-            _mName = name;
+        public AgentCommChannel(String instanceId, String channelKey, String name, boolean hasErrors) {
+            _mChannelInstanceId = instanceId;
+            _mChannelKey = channelKey;
+            _mChannelName = name;
             _mHasErrors = hasErrors;
         }
 
         public ObjectNode getJSON() {
             ObjectNode on = JsonUtils.MAPPER.createObjectNode();
 
-            on.put("name", _mName);
-            on.put("key", _mKey);
+            on.put("channelName", _mChannelName);
+            on.put("instanceId", _mChannelInstanceId);
+            on.put("channelKey", _mChannelKey);
             on.put("hasErrors", _mHasErrors);
 
             return on;

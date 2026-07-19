@@ -2,41 +2,78 @@ package com.flowstack.channels;
 
 import java.util.HashMap;
 import java.util.ServiceLoader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.channels.base.CommChannelBase;
+import com.flowstack.channels.base.CommChannelException;
 import com.flowstack.channels.base.CommChannelInstance;
+import com.flowstack.channels.base.JsonUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class ChannelRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistry.class);
 
-    private static final HashMap<String,CommChannelBase> REGISTERED_CHANNELS = new HashMap<>();
+    private static final HashMap<String, CommChannelBase> _mRegisteredChannels = new HashMap<>();
+    private static final HashMap<String, ObjectNode> _mChannelDefinitions = new HashMap<>();
 
     public static void loadChannels() {
         // ServiceLoader looks for files in META-INF/services
         ServiceLoader<CommChannelBase> loader = ServiceLoader.load(CommChannelBase.class);
-        LOGGER.info("Loading Channels");
+
         for (CommChannelBase channel : loader) {
             String key = channel.getKey();
-            REGISTERED_CHANNELS.put(key,channel);
+            LOGGER.info("Regestering channel '{}'", key);
+            _mRegisteredChannels.put(key, channel);
         }
     }
 
-    public static CommChannelInstance getInstanceFor(String key) {
-        CommChannelBase channel = REGISTERED_CHANNELS.get(key);
-        if(channel == null) {
+    public static CommChannelInstance createInstanceFor(String channelInstanceKey, String agentKey) {
+        ObjectNode channelInstanceDef = _mChannelDefinitions.get(channelInstanceKey);
+        if(channelInstanceDef == null) {
+            LOGGER.error("Channel instance config is not defined for instance id "+channelInstanceKey);
+            return null;
+        }
+        String channelId = channelInstanceDef.get("channel").asText();
+        CommChannelBase channel = _mRegisteredChannels.get(channelId);
+        if (channel == null) {
             return null;
         }
 
-        return channel.createInstance();
+        ObjectNode config = null;
+        if(channelInstanceDef.has("config") && !channelInstanceDef.get("config").isNull()) {
+            config = (ObjectNode)channelInstanceDef.get("config");
+        }
+        return channel.createInstance(agentKey, config);
     }
 
-    public static String getNameFor(String key) {
-        return REGISTERED_CHANNELS.get(key).getName();
+    public static CommChannelBase getChannelFor(String channelInstanceId) {
+        ObjectNode on = _mChannelDefinitions.get(channelInstanceId);
+        return _mRegisteredChannels.get(on.get("channel").asText());
+    }
+
+    public static void loadChannelDefinitions(String file) throws CommChannelException{
+        try {
+            InputStream is = new FileInputStream(file);
+
+            ObjectNode o = (ObjectNode) JsonUtils.MAPPER.readTree(is);
+            ArrayNode channelInstances = (ArrayNode) o.get("channelInstances");
+            int len = channelInstances.size();
+            for (int i = 0; i < len; i++) {
+                ObjectNode channelInstanceConfig = (ObjectNode) channelInstances.get(i);
+                String channelInstanceId = channelInstanceConfig.get("id").asText();
+                _mChannelDefinitions.put(channelInstanceId, channelInstanceConfig);
+            }
+
+        } catch (IOException e) {
+            throw new CommChannelException(e);
+        }
     }
 
 }

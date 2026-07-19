@@ -1,0 +1,24 @@
+{
+    "channelInstances": [
+        {
+            "channel": "slack",
+            "id": "slack",
+            "config": {
+                "credentialsKey": "slack.channel.config"
+            }
+        },
+        {
+            "channel": "gmail",
+            "id": "gmail",
+            "config": {
+                "accessTokenKey": "google.gmail.tokens",
+                "clientCredsKey": "google.gmail.clientCreds",
+                "filter" : {
+                    "subject" : {
+                        "contains" : "FlowStack Request"
+                    }
+                }
+            }
+        }
+    ]
+}
