@@ -54,7 +54,9 @@ public class ModelResponseHandler {
                 // We will be adding as one for current
                 StepGroup sg = new StepGroup();
                 Step firstStep = sg.addSteps(steps, flowRunner.getModelName());
-                flowRunner.clearAndRunStepGroup(sg, firstStep);
+                String lastPrompt = stepRunInstance.getStepDefinition().instruction;
+                //When a new step group is created, it should not lose the prompt that created it. Usually for the first prompt. 
+                flowRunner.clearAndRunStepGroup(sg, firstStep, lastPrompt);
                 return;
             }
             String nextStep = null;

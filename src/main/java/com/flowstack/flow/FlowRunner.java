@@ -341,9 +341,10 @@ public class FlowRunner {
      * steps list from the LLM and remove the root,
      * to start new.
      */
-    void clearAndRunStepGroup(StepGroup group, Step stepToRun) {
+    void clearAndRunStepGroup(StepGroup group, Step stepToRun, String promptMessage) {
         _mNextSequenceNumber = 0;
         _mStepGroup = group;
+        
         StepRunInstance runInstance = new StepRunInstance(this, _mNextSequenceNumber, stepToRun, null,
                 stepToRun.hitlNeeded);
         _mCurrenStepName = stepToRun.name;
@@ -354,9 +355,15 @@ public class FlowRunner {
 
         // Clear the memory.
         _mMemory.clear();
+        
         List<String> systemInstructions = _mAgent.getInitialStepSystemInstructionsForDomain();
         for (String s : systemInstructions) {
             _mMemory.addContent(new ModelSystemMessage(s));
+        }
+        if( promptMessage != null && promptMessage.length() > 0) {
+            LinkedList<String> userMessage = new LinkedList<>();
+            userMessage.add(promptMessage);
+            _mMemory.addContent(new ModelUserMessage(userMessage));
         }
         runInstance.prepare();
         if (_mIsDebugMode) {

@@ -78,15 +78,21 @@ public class PromptGenerator {
             tools.append("##IMPORTANT:\n1. Do not use any tools other the ones listed above for steps\n\n");
             systemInstructions.add(tools.toString());
         }
+        else {
+
+        }
 
         // Add any variables.
+        StringBuilder vars = new StringBuilder("#VARIABLES\n(Format - Variable name:Description)\n\n");
         if (variables.size() > 0) {
-            StringBuilder vars = new StringBuilder("#VARIABLES\n(Format - Variable name:Description)\n\n");
             for (String k : variables.keySet()) {
                 vars.append(k).append(":").append(variables.get(k).description).append("\n");
             }
 
             systemInstructions.add(vars.toString());
+        }
+        else {
+            systemInstructions.add("None. There are absolutely no runtime variables defined for this execution. Do not use flower braces {{}} anywhere in your output.\n");
         }
 
         if (agentsAndCapabilities.size() > 0) {

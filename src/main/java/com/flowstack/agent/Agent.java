@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 import com.flowstack.api.channel.RestChannel;
-import com.flowstack.api.channel.RestChannelInstance;
 import com.flowstack.channels.ChannelRegistry;
 import com.flowstack.channels.base.CommChannelBase;
 import com.flowstack.channels.base.CommChannelException;
@@ -357,7 +356,9 @@ public class Agent {
         for (String serverName : _mMCPServerNames) {
             MCPServer server = MCPRegistry.getServer(serverName);
             if (server != null) {
+
                 List<String> serverToolNames = server.getToolNames(true);
+                LOGGER.info("Adding tools from MC server '{}' to agent '{}'. Size of tools : {}", serverName, this.id, serverToolNames.size());
                 _mToolNames.addAll(serverToolNames);
                 if (server.hasErrors) {
                     this.hasErrors = true;

@@ -4,9 +4,13 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class Orchestrator {
 
-     
+     private static final Logger LOGGER = LoggerFactory.getLogger(Agent.class);
 
     public static Orchestrator INSTANCE = new Orchestrator();
 
@@ -21,6 +25,7 @@ public class Orchestrator {
     }
 
     public void addMessage(String agentKey, AgentMessage am) {
+        LOGGER.info("Adding message for agent '{}'", agentKey);
         _mAgentQueues.get(agentKey).add(am);
     }
 

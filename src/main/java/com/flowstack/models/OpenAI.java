@@ -156,9 +156,7 @@ public class OpenAI extends ModelConnection {
             _mClient = HttpClient.newHttpClient();
         }
         if (_mLogRequests) {
-            LOGGER.info("================================= REQUEST ======================");
             LOGGER.info(request.toPrettyString());
-            LOGGER.info("================================================================");
         }
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(getURL()))
@@ -253,9 +251,7 @@ public class OpenAI extends ModelConnection {
         }
 
         if (_mLogRequests) {
-            LOGGER.info("================================ RESPONSE ======================");
             LOGGER.info(response.toPrettyString());
-            LOGGER.info("================================================================");
         }
 
 

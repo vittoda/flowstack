@@ -149,9 +149,7 @@ public class Gemini extends ModelConnection {
         }
 
         if (_mLogRequests) {
-            LOGGER.info("================================= REQUEST ======================");
             LOGGER.info(req.toPrettyString());
-            LOGGER.info("================================================================");
         }
         String URL = "https://generativelanguage.googleapis.com/v1beta/models/" + _mModelName
                 + ":generateContent?key="
@@ -272,9 +270,7 @@ public class Gemini extends ModelConnection {
                         m = m.substring(7, m.length() - 3);
                     }
                     ObjectNode contentJSON = (ObjectNode) JsonUtils.MAPPER.readTree(m);
-                    LOGGER.info("================================= CONTENT ======================");
                     LOGGER.info(contentJSON.toPrettyString());
-                    LOGGER.info("================================================================");
 
                     return new ModelJSONResponse(part, contentJSON);
                 } catch (JsonProcessingException e) {

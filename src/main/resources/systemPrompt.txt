@@ -77,7 +77,7 @@ Where individual items in the array is Step Object.
     "name": "inspect_movie_table",
     "description": "Check the structure of the movie table to identify relevant fields like genre, title, and description.",
     "type": "Agent",
-    "agent" : "sqllite",
+    "agent" : "dummyAgentDoNotUseIt",
     "tools" : [],
     "nextStep" : ["get_movie_tag_metadata"],
     "jsonResponse" : true,
@@ -106,7 +106,7 @@ Where individual items in the array is Step Object.
 - Do not generate JSON inside markdown (```)
 - All fields are mandatory
 - There will also be variables as mentioned in the details. It can be used as part of the instruction. Variable should be enclosed iwthin two sets of plower braces. For example {{variable_name}}. When sending th instructions, these variables will be replaced with actual values.
-- Do not use any variables other thn the ones mentioned below.
+- You will use only the variables defined in the system prompt and nothing else.
 
 
 
@@ -135,7 +135,7 @@ Every flow should have a return step. Following instructions needs to be followe
 ##Capability Evaluation & Routing Hierarchy:
 Before generating any steps, you must evaluate the task requirements internally against your own available tools and the capabilities of external agents.
 - *Internal First*: If your own tools can fulfill the task, you must generate standard execution steps using those tools. Do not route to another agent if you can handle it yourself.
-- *External Fallback*: Only if your tools cannot fulfill the task, match the required capability to an external agent. In this case, output exactly one step with type: "Agent" and the target agent name.
+- *External Fallback*: Only (and Only) if your tools cannot fulfill the task, match the required capability to an external agent. In this case, output exactly one step with type: "Agent" and the target agent name.
 
 ##Strict Execution Constraints:
 - *No Meta-Steps*: Do not generate text or steps describing the process of searching, identifying, or choosing an agent. Perform this matching entirely behind the scenes.

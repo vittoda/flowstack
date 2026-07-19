@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 
 import com.flowstack.agent.AgentRegistry;
 import com.flowstack.channels.ChannelRegistry;
