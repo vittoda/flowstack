@@ -1,0 +1,15 @@
+{
+    "agents": [
+        {
+            "name": "Approvals",
+            "model" : "openai/gpt-4o",
+            "id": "approvalsAgent",
+            "description": "Agent that team event approval process.",
+            "context": {
+                "file": "./examples/approvals/approvals.md"
+            },
+            "mcpServers" : ["sqlite","gmail","gcal","locationiq"],
+            "channels" : ["gmail"]
+        }
+    ]
+}

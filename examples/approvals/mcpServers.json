@@ -1,0 +1,37 @@
+{
+    "mcpServers": [
+        {
+            "name": "gmail",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/gmail/build/libs/gmail-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "gcal",
+            "category" : "Saas",
+            "command" : "/usr/bin/java -jar ${mcp.base}/gcal/build/libs/gcal-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "sqlite",
+            "category" : "System",
+            "command" : "/usr/bin/java -DdataPath=/tmp -jar ${mcp.base}/sqlite/build/libs/sqlite-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        },
+        {
+            "name": "locationiq",
+            "category" : "System",
+            "command" : "/usr/bin/java -jar ${mcp.base}/locationIQ/build/libs/locationiq-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        }
+    ]
+    
+}

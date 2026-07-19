@@ -358,7 +358,6 @@ public class Agent {
             if (server != null) {
 
                 List<String> serverToolNames = server.getToolNames(true);
-                LOGGER.info("Adding tools from MC server '{}' to agent '{}'. Size of tools : {}", serverName, this.id, serverToolNames.size());
                 _mToolNames.addAll(serverToolNames);
                 if (server.hasErrors) {
                     this.hasErrors = true;
