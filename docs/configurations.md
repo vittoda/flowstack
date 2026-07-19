@@ -181,3 +181,110 @@ Following samle agent configuration uses variables.
     ]
 }
 ```
+
+## Channels Configuration
+of slack. This is where you define them and each having its own configuration. If two agents share the same configuration, you can define one instance here and refer the same Id in agent definition. Internally, server will create one instance each for each of the agent. It is up to channel implementation, how it handles the instances with same configuration.
+
+```
+{
+    "channelInstances" : ChannelInstance[]
+}
+```
+
+### Channel instance configuration
+
+```
+{
+    "channel": "slack" | "gmail",
+    "id": string,
+    "config": ChannelConfig
+}
+```
+
+| Field Name | Type | Mandatory | Description |
+| :--- | :---: | :---: | :--- |
+| `channel` | String | Yes | Channel name. Possible values `slack` and `gmail`|
+| `id` | String | Yes | A unique id for this channel instance. This identifier will be used by agent definition |
+| `config` | String | No | Channel specific configuration|
+
+
+### Slack channel instance configuration
+
+```
+{
+    "credentials": {
+        "botToken" : string,
+        "appToken" : string
+    }
+}
+```
+
+| Field Name | Type | Mandatory | Description |
+| :--- | :---: | :---: | :--- |
+| `credentials` | String | No | Slack credentials should include `appToken` and `botToken` attributes |
+| `credentialsKey` | String | No | If the credentials are not provided in the configuration, this value will specify the key in local key manager. Default value is `slack.channel.config` |
+
+In the configuration, one of `credentials` or `credentialsKey` can be provided.
+
+
+### Gmail channel instance configuration
+
+```
+{
+    "credentials": {
+        "accessTokens" : {
+            "access_token" : string,
+            "refresh_token" : string,
+            "expiry" : number
+        },
+        "clientCreds" : {
+            "clientId" : string,
+            "clientSecret" : string
+        },
+    }
+}
+```
+
+| Field Name | Type | Mandatory | Description |
+| :--- | :---: | :---: | :--- |
+| `credentials` | String | No | Gmail credentials should contain `accessTokens` and `clientCreds` objects. |
+| `accessTokens` | String | Yes | Contains the `access_token`, `refresh_token` and `expiry` attributes. Expiry is the milliseconds since epoch. Google API will return expires field, which gives the seconds till the access token is valid (this is relative). This should be changed to absolute timestamp.|
+| `clientCreds` | String | Yes | Client credentials are used for refreshing the access token, along with refresh token when it expires. The object should contain `clientId` and `clientSecret`|
+| `accessTokenKey` | String | No | If credentials are not specified, this key points to the access token details in local key manager. If this field is not specified, `google.gmail.tokens` will be used as access token key |
+| `clientCredsKey` | String | No | If credentials are not specified, this key points to the client credentials object in local key manager. If this field is not specified, `google.gmail.clientCreds` will be used as access token key |
+
+In the configuration, if `credentials` is not specified, the implementaion will use local key manager to fetch the key
+
+### Example configuration for channel instances.
+
+Here is an example channel configuration file which uses *Slack* and *Gmail* channels.
+
+```
+{
+    "channelInstances": [
+        {
+            "channel": "slack",
+            "id": "slack",
+            "config": {
+                "credentials": {
+                    "appToken" : "xapp-1-123456789-12311233-12111221",
+                    "botTokenToken" : "xoxb-1-123456789-12311233-12111221"
+                }
+            }
+        },
+        {
+            "channel": "gmail",
+            "id": "gmail",
+            "config": {
+                "accessTokenKey": "google.gmail.tokens",
+                "clientCredsKey": "google.gmail.clientCreds",
+                "filter" : {
+                    "subject" : {
+                        "contains" : "FlowStack Request"
+                    }
+                }
+            }
+        }
+    ]
+}
+```
