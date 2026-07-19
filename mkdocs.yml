@@ -42,4 +42,5 @@ nav:
     - Configurations: configurations.md
     - System Properties: systemproperties.md
     - Local Key Manager: localkeymanager.md
+    - Credentials: creds.md
   - Architecture: architecture_home.md
