@@ -231,29 +231,52 @@ In the configuration, one of `credentials` or `credentialsKey` can be provided.
 
 ```
 {
-    "credentials": {
-        "accessTokens" : {
-            "access_token" : string,
-            "refresh_token" : string,
-            "expiry" : number
-        },
-        "clientCreds" : {
-            "clientId" : string,
-            "clientSecret" : string
-        },
-    }
+    "accessTokens" : {
+        "access_token" : string,
+        "refresh_token" : string,
+        "expiry" : number
+    },
+    "clientCreds" : {
+        "clientId" : string,
+        "clientSecret" : string
+    },
+    "accessTokenKey" : string,
+    "clientCredsKey" : string,
+    "filter" : GmailFilter
 }
 ```
 
 | Field Name | Type | Mandatory | Description |
 | :--- | :---: | :---: | :--- |
-| `credentials` | String | No | Gmail credentials should contain `accessTokens` and `clientCreds` objects. |
 | `accessTokens` | String | Yes | Contains the `access_token`, `refresh_token` and `expiry` attributes. Expiry is the milliseconds since epoch. Google API will return expires field, which gives the seconds till the access token is valid (this is relative). This should be changed to absolute timestamp.|
 | `clientCreds` | String | Yes | Client credentials are used for refreshing the access token, along with refresh token when it expires. The object should contain `clientId` and `clientSecret`|
 | `accessTokenKey` | String | No | If credentials are not specified, this key points to the access token details in local key manager. If this field is not specified, `google.gmail.tokens` will be used as access token key |
 | `clientCredsKey` | String | No | If credentials are not specified, this key points to the client credentials object in local key manager. If this field is not specified, `google.gmail.clientCreds` will be used as access token key |
+| `filter` | String | No | This configuration defines filter criteria to process the messages. If no filter is provided, all the incoming messages are processed. |
 
 In the configuration, if `credentials` is not specified, the implementaion will use local key manager to fetch the key
+
+#### GmailFilter
+
+Filter on the incoming messages to processed. You can specify multiple filter conditions. All the conditions should match for the message to be processed.
+
+```
+{
+    "subject" : {
+        "contains" : string,
+        "startsWith" : string,
+        "endsWith" : string
+    },
+     "sender" : {
+        "contains" : string,
+        "startsWith" : string,
+        "endsWith" : string
+    },
+    "body" : {
+        "contains" : string
+    }
+}
+```
 
 ### Example configuration for channel instances.
 

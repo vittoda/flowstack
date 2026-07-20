@@ -484,6 +484,8 @@ public class FlowRunner {
 
             ObjectNode requestObject = JsonUtils.MAPPER.createObjectNode();
             requestObject.put("sessionId", _mSessionId);
+            requestObject.put("requstId", requstId);
+            requestObject.put("message", message);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,11 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
+import com.flowstack.api.objects.UnholdRequest;
 import com.flowstack.flow.FlowRunLog;
 import com.flowstack.flow.FlowRunner;
 import com.flowstack.flow.FlowRunnerSessions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/fs/api/v1/sessions")
@@ -140,6 +143,7 @@ public class SessionsAPI {
 
     @PostMapping(produces = "application/json", consumes = "application/json", path = "/{sessionId}/approve")
     public ResponseEntity<Object> approveSession(HttpServletRequest request,
+            @Valid @RequestBody UnholdRequest r,
             @PathVariable("sessionId") String sessionId) {
 
         FlowRunner runner = FlowRunnerSessions.getBySessionId(sessionId);
@@ -147,7 +151,11 @@ public class SessionsAPI {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("status", "error", "message", "Invalid session Id"));
         }
-        runner.unholdExecution(FlowRunner.UnholdMode.NORMAL, null);
+
+        ObjectNode response = JsonUtils.MAPPER.createObjectNode();
+        response.put("status", r.getStatus());
+        response.put("result", r.getResponse());
+        runner.unholdExecution(FlowRunner.UnholdMode.NORMAL, response);
 
         ObjectNode result = JsonUtils.MAPPER.createObjectNode();
         result.put("status", "success");

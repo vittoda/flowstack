@@ -125,6 +125,7 @@ Where individual items in the array is Step Object.
 13. If ther is a communication channel for response, same can be used for to send error message back to the caller.
 14. Consecutive steps for the same Agent MUST be merged into a single step string (e.g., 'Do X and then Y'); never output back-to-back step objects for the same agent.
 15. Human in the loop can be part of a step. So, no need a generate a dedicated step. For example, if the step is to delete a file, which needs human approval, the step to delete the file itself can have the flag hitlNeeded
+16. For Human in the loop step, include all the tools, and prompt needed to process the step. Also include the endFlow step, to be called if there is any invalid response from the human.
 
 ##Return step
 Every flow should have a return step. Following instructions needs to be followed.

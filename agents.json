@@ -12,53 +12,9 @@
             ]
         },
         {
-            "name": "Shell and GMail",
-            "id": "shell_and_Gmail",
-            "description": "Shell and Gmail integration",
-            "context": {
-                "file": "shellAndGmailSystemPrompt.txt"
-            },
-            "mcpServers": [
-                "shell",
-                "gmail"
-            ]
-        },
-        {
-            "name": "Google Calendar",
-            "id": "gcal",
-            "description": "Google Calendar Integration",
-            "context": {
-                "file": "gcalSystemPrompt.txt"
-            },
-            "mcpServers": [
-                "gcal"
-            ]
-        },
-        {
-            "name": "Google Drive",
-            "id": "gdrive",
-            "description": "Google Drive Integration",
-            "context": {
-                "file": "gdriveSystemContext.txt"
-            },
-            "mcpServers": [
-                "gdrive"
-            ]
-        },
-        {
-            "name": "AWS S3",
-            "id": "aws-s3",
-            "description": "AWS S3 Integration",
-            "context": {
-                "file": "awss3SystemContext.txt"
-            },
-            "mcpServers": [
-                "aws-s3"
-            ]
-        },
-        {
             "name": "SQLite",
             "id": "sqlite",
+             "model" : "gpt-4o",
             "description": "SQLite Integration",
             "context": {
                 "file": "sqliteContext.txt"
@@ -137,28 +93,7 @@
                 }
             ]
         },
-        {
-            "name": "Slack",
-            "id": "slack",
-            "description": "Slack Integration",
-            "context": {
-                "file": "sqliteContext.txt"
-            },
-            "mcpServers": [
-                "slack"
-            ]
-        },
-        {
-            "name": "Jira",
-            "id": "jira",
-            "description": "Jira Integration",
-            "context": {
-                "file": "jiraAgent.txt"
-            },
-            "mcpServers": [
-                "jira"
-            ]
-        },
+   
         {
             "name": "Event Agent",
             "model" : "openai/gpt-4o",
@@ -170,28 +105,6 @@
             "mcpServers" : [],
             "agents" : ["slack","sqlite", "shell"],
             "channels" : ["slack"]
-        },
-        {
-            "name": "OpenSearch Agent",
-            "model" : "gpt-4o",
-            "id": "opensearchAgent",
-            "description": "Agent that orchestrates opensearch operations.",
-            "context": {
-                "file": "opensearchAgent.txt"
-            },
-            "mcpServers" : ["opensearch"]
-        },
-        {
-            "name": "Approvals",
-            "model" : "openai/gpt-4o",
-            "id": "approvalsAgent",
-            "description": "Agent that team event approval process.",
-            "context": {
-                "file": "approvals.md"
-            },
-            "mcpServers" : ["sqlite","gmail","gcal","locationiq"],
-            "channels" : ["gmail"]
         }
-        
     ]
 }

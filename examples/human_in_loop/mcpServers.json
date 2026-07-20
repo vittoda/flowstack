@@ -1,0 +1,13 @@
+{
+    "mcpServers": [
+        {
+            "name": "sqlite",
+            "category" : "System",
+            "command" : "/usr/bin/java -DdataPath=/tmp -jar ${mcp.base}/sqlite/build/libs/sqlite-1.0.1-all.jar ",
+            "connection": {
+                "type": "stdio"
+            }
+        }
+    ]
+    
+}
