@@ -3,7 +3,7 @@
         {
             "name": "SQLite",
             "id": "sqlite",
-             "model" : "openai/gpt-4o",
+            "model" : "openai/gpt-4o",
             "description": "SQLite Integration",
             "context": {
                 "file": "sqliteContext.txt"
@@ -11,14 +11,14 @@
             "hitlConfig" :{
                 "targets" : [
                     {
-                        "type" : "webhook",
-                        "instance" : "http://localhost:8090/hil"
+                        "type" : "event"
                     }
                 ]
             },
             "mcpServers": [
                 "sqlite"
-            ]
+            ],
+             "channels" : ["slack"]
         }
     ]
 }

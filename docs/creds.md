@@ -105,6 +105,11 @@ We will need Bot token and App token to read messages from MCP server or channel
 
 14. Re-install the app
 15. Once the app is re-installed , click **Install App** on **Settings** tab, and copy the Bot token. Save it at a safe place.
-16. In `~/.fskeys`, ass a key `slack.channel.config` with value as `{appToken:'App token', botToken:' Bot auth token'}`.
+16. Add the app to the channel.
+    1. Goto the channel settings
+    2. Click **Agent & Apps** tab
+    3. Click **Add Agent & Apps**. 
+    4. Select the FlowStack app and add it.
+17. In `~/.fskeys`, ass a key `slack.channel.config` with value as `{appToken:'App token', botToken:' Bot auth token'}`.
 
 

@@ -1,0 +1,11 @@
+{
+    "channelInstances": [
+        {
+            "channel": "slack",
+            "id": "slack",
+            "config": {
+                "credentialsKey": "slack.channel.config"
+            }
+        }
+    ]
+}
