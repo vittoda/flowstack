@@ -45,7 +45,11 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
             LOGGER.info("Connection established with client '{}'" , clientId);
             ObjectNode result = JsonUtils.MAPPER.createObjectNode();
             result.put("status", "success");
-            result.put("message", "Version : 1.1.0");
+            String version = TerminalWebSocketHandler.class.getPackage().getImplementationVersion();
+            if (version == null) {
+                version = "Unknon-version";
+            }
+            result.put("message", "Server Version : "+version);
             _sendMessageToClient(clientId, result.toString());
             return;
         } else {

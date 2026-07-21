@@ -156,6 +156,7 @@ public class Agent {
         node.put("id", this.id);
         node.put("description", this.description);
         node.put("hasErrors", this.hasErrors);
+        node.put("model", this._mModel);
         if (extended) {
             node.put("context", this._mContext);
             node.put("debug", this.debug);

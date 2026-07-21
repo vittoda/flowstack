@@ -68,6 +68,7 @@ public class PromptGenerator {
 
         // Tools
         if (toolNames.size() > 0) {
+            toolNames.sort(String::compareTo);
             StringBuilder tools = new StringBuilder("#TOOLS\n(Format - Tool name:Description)\n\n");
             for (String toolName : toolNames) {
                 ObjectNode desc = MCPRegistry.getToolDefinitionForToolCalling(toolName);

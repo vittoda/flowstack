@@ -77,6 +77,10 @@ public class AgentAPI {
 			@PathVariable(name = "agentId") String agentId) {
 
 		Agent agentInstance = AgentRegistry.getById(agentId);
+		if(agentInstance == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(Map.of("status", "error", "message", "Agent not found"));
+		}
 
 		try {
 

@@ -36,7 +36,7 @@
         },
         {
             "name": "SQLite and GMail",
-            "id": "sqlite_and_Gmail",
+            "id": "sqlite_and_gmail",
             "description": "SQLite and Gmail integration",
             "context": {
                 "file": "gmailAndSqliteContext.txt"

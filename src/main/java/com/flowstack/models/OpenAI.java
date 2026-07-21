@@ -1,12 +1,16 @@
 package com.flowstack.models;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,9 +38,18 @@ public class OpenAI extends ModelConnection {
 
     private boolean _mLogRequests = false;
 
+    private boolean _mRecording = false;
+    private boolean _mPlayback = false;
+    private String _mRecordingFile = null;
+
     public OpenAI(String modelName) {
         _mModelName = modelName;
         _mLogRequests = System.getProperty("openAI.model.logRequests", "false").equals("true");
+        _mRecording = System.getProperty("fs.openai.recording", "").equals("true");
+        _mPlayback = System.getProperty("fs.openai.playback", "").equals("true");
+        if (_mRecording || _mPlayback) {
+            _mRecordingFile = System.getProperty("flowstack.openai.recording.file", "/tmp/openai");
+        }
     }
 
     protected String getCred() {
@@ -158,58 +171,76 @@ public class OpenAI extends ModelConnection {
         if (_mLogRequests) {
             LOGGER.info(request.toPrettyString());
         }
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(getURL()))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + getCred())
-                .POST(HttpRequest.BodyPublishers.ofString(request.toString()))
-                .build();
 
         int retryInterval = 5000; // 5 seconds
         int timerMultiplier = 1;
         try {
-            Date requestStartTime = new Date();
-            HttpResponse<String> response = _mClient.send(
-                    httpRequest,
-                    HttpResponse.BodyHandlers.ofString());
-            Date endTime = new Date();
-            int statusCode = response.statusCode();
-            try {
-                MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
-            } catch (MetricsException e) {
-                LOGGER.warn("Error saving token metric. " , e.getMessage());
-            }
-
-            if (statusCode == 429 || statusCode == 503) {
-                int retryCount = 0;
-                while (retryCount < THROTTLE_ERROR_RETRY_COUNT && (statusCode == 429 || statusCode == 503)) {
-                    Thread.sleep(retryInterval);
-                    requestStartTime = new Date();
-                    response = _mClient.send(
-                            httpRequest,
-                            HttpResponse.BodyHandlers.ofString());
-                    endTime = new Date();
-                    statusCode = response.statusCode();
-                    try {
-                        MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
-                    } catch (MetricsException e) {
-                        LOGGER.warn("Error saving token metric. " , e.getMessage());
-                    }
-                    retryCount++;
-                    timerMultiplier++;
-                    retryInterval = 5000 * timerMultiplier;
+            JsonNode response = null;
+            if (_mPlayback) {
+                LOGGER.info("Playing back the response");
+                response = getResponse(request, _mRecordingFile + "_requests.json",
+                        _mRecordingFile + "_responses.json");
+                if(response == null) {
+                    throw new ModelException("Playback mode returned null response");
                 }
-            }
+            } else {
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(getURL()))
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + getCred())
+                        .POST(HttpRequest.BodyPublishers.ofString(request.toString()))
+                        .build();
 
-            if (statusCode == 403 || statusCode == 401) {
-                throw new ModelNonRecoverableException("Model requests unthentication error. Non-recoverable.");
-            }
-            if (statusCode == 429) {
-                throw new ModelNonRecoverableException("Model requests are throttled. Non-recoverable.");
-            }
-            if (statusCode != 200) {
-                throw new ModelException(
-                        "API responded with status code '" + statusCode + "'.\n Message : " + response.body());
+                Date requestStartTime = new Date();
+                HttpResponse<String> httpResponse = _mClient.send(
+                        httpRequest,
+                        HttpResponse.BodyHandlers.ofString());
+                Date endTime = new Date();
+                int statusCode = httpResponse.statusCode();
+                try {
+                    MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
+                } catch (MetricsException e) {
+                    LOGGER.warn("Error saving token metric. ", e.getMessage());
+                }
+
+                if (statusCode == 429 || statusCode == 503) {
+                    int retryCount = 0;
+                    while (retryCount < THROTTLE_ERROR_RETRY_COUNT && (statusCode == 429 || statusCode == 503)) {
+                        Thread.sleep(retryInterval);
+                        requestStartTime = new Date();
+                        httpResponse = _mClient.send(
+                                httpRequest,
+                                HttpResponse.BodyHandlers.ofString());
+                        endTime = new Date();
+                        statusCode = httpResponse.statusCode();
+                        try {
+                            MetricsDB.addRequestMetricForModel(_mModelName, requestStartTime, endTime, statusCode);
+                        } catch (MetricsException e) {
+                            LOGGER.warn("Error saving token metric. ", e.getMessage());
+                        }
+                        retryCount++;
+                        timerMultiplier++;
+                        retryInterval = 5000 * timerMultiplier;
+                    }
+                }
+
+                if (statusCode == 403 || statusCode == 401) {
+                    throw new ModelNonRecoverableException("Model requests unthentication error. Non-recoverable.");
+                }
+                if (statusCode == 429) {
+                    throw new ModelNonRecoverableException("Model requests are throttled. Non-recoverable.");
+                }
+                if (statusCode != 200) {
+                    throw new ModelException(
+                            "API responded with status code '" + statusCode + "'.\n Message : " + httpResponse.body());
+                }
+
+                String responseBody = httpResponse.body();
+                response = JsonUtils.MAPPER.readTree(responseBody);
+                if (_mRecording) {
+                    dumpRequestAndResponse(request, response,
+                            _mRecordingFile + "_requests.json", _mRecordingFile + "_responses.json");
+                }
             }
 
             // Request success. Now add additional system messages and user messages to
@@ -224,15 +255,14 @@ public class OpenAI extends ModelConnection {
                 memory.addContent(new ModelUserMessage(userMessages));
             }
 
-            String responseBody = response.body();
-            return handleResponse(memory, (ObjectNode) JsonUtils.MAPPER.readTree(responseBody), jsonResponse);
+            return handleResponse(memory, response, jsonResponse);
         } catch (IOException | InterruptedException e) {
             throw new ModelException(e);
         }
 
     }
 
-    private ModelResponse handleResponse(FlowMemory memory, ObjectNode response, boolean jsonRespnse)
+    private ModelResponse handleResponse(FlowMemory memory, JsonNode response, boolean jsonRespnse)
             throws ModelException {
 
         if (response.has("usage")) {
@@ -243,7 +273,7 @@ public class OpenAI extends ModelConnection {
             try {
                 MetricsDB.addTokenMetric(_mModelName, inputTokenSize, outputTokenSize);
             } catch (Exception e) {
-                LOGGER.warn("Error saving token metric. " , e.getMessage());
+                LOGGER.warn("Error saving token metric. ", e.getMessage());
             }
         }
         if (!response.has("choices")) {
@@ -253,7 +283,6 @@ public class OpenAI extends ModelConnection {
         if (_mLogRequests) {
             LOGGER.info(response.toPrettyString());
         }
-
 
         ArrayNode choices = (ArrayNode) response.get("choices");
         ObjectNode choice = (ObjectNode) choices.get(0); // Asume I will get at least one.
@@ -293,13 +322,72 @@ public class OpenAI extends ModelConnection {
                 } catch (JsonProcessingException e) {
                     throw new ModelException(e);
                 }
-            } 
+            }
 
             return new ModelTextResponse(message, m);
 
         } else {
             memory.addContent(new ModelAssistantMessage(message.toString(), null));
             return new ModelResponse(message);
+        }
+    }
+
+    private void dumpRequestAndResponse(JsonNode request, JsonNode response, String requestFile,
+            String responseFile) {
+        String uid = UUID.randomUUID().toString();
+
+        try {
+            ObjectNode on = null;
+            if (new File(requestFile).exists()) {
+                on = (ObjectNode) JsonUtils.MAPPER.readTree(new File(requestFile));
+            } else {
+                on = JsonUtils.MAPPER.createObjectNode();
+            }
+            on.set(uid, request);
+            FileOutputStream fos = new FileOutputStream(new File(requestFile));
+            fos.write(on.toString().getBytes());
+            fos.close();
+
+            if (new File(responseFile).exists()) {
+                on = (ObjectNode) JsonUtils.MAPPER.readTree(new File(responseFile));
+            } else {
+                on = JsonUtils.MAPPER.createObjectNode();
+            }
+            on.set(uid, response);
+            fos = new FileOutputStream(new File(responseFile));
+            fos.write(on.toString().getBytes());
+            fos.close();
+        } catch (IOException e) {
+            LOGGER.warn("Not able to write the request file.", e);
+        }
+    }
+
+    private JsonNode getResponse(JsonNode request, String requestFile, String responseFile) {
+        try {
+            // Load the request file and get the key
+            JsonNode on = JsonUtils.MAPPER.readTree(new File(requestFile));
+            Iterator<String> fieldNames = on.fieldNames();
+            String requestKey = null;
+            while (fieldNames.hasNext()) {
+                String key = fieldNames.next();
+                JsonNode value = on.get(key);
+                if (value.equals(request)) {
+                    requestKey = key;
+                    break;
+                }
+            }
+
+            if (requestKey == null) {
+                LOGGER.warn("Request key is null for the above request.");
+                return null;
+            }
+            LOGGER.info("Finding rsponse for key '{}]", requestKey);
+            on = JsonUtils.MAPPER.readTree(new File(responseFile));
+            return on.get(requestKey);
+
+        } catch (IOException e) {
+            LOGGER.warn("Not able to write the request file.", e);
+            return null;
         }
     }
 

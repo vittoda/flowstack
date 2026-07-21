@@ -47,3 +47,11 @@ application {
     mainClassName = javaMainClass
 }
 
+bootJar {
+    manifest {
+        attributes(
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
+        )
+    }
+}
