@@ -35,35 +35,6 @@
             ]
         },
         {
-            "name": "File system and GMail",
-            "id": "fs_and_Gmail",
-            "description": "File system and Gmail integration",
-            "context": {
-                "file": "fileSystemAndGmailSystemPrompt.txt"
-            },
-            "mcpServers": [
-                "filesystem",
-                "gmail"
-            ],
-            "variables": [
-                {
-                    "name": "fullName",
-                    "label": "Full Name",
-                    "description": "Full name of the recipient"
-                },
-                {
-                    "name": "subject",
-                    "label": "Email Subject",
-                    "description": "Subject for the email"
-                },
-                {
-                    "name": "email",
-                    "label": "Email address",
-                    "description": "Email address recipient"
-                }
-            ]
-        },
-        {
             "name": "SQLite and GMail",
             "id": "sqlite_and_Gmail",
             "description": "SQLite and Gmail integration",

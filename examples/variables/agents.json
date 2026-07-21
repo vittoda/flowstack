@@ -1,0 +1,30 @@
+{
+    "agents": [
+        {
+            "name": "SQLite and GMail",
+            "model" : "openai/gpt-4o",
+            "id": "sqlite_and_gmail",
+            "description": "SQLite and Gmail integration",
+            "context": {
+                "file": "gmailAndSqliteContext.txt"
+            },
+            "hilWebhookURL": "http://localhost:8090/hil",
+            "mcpServers": [
+                "sqlite",
+                "gmail"
+            ],
+            "variables": [
+                {
+                    "name": "customer_id",
+                    "label": "Customer Id",
+                    "description": "Customer Id"
+                },
+                 {
+                    "name": "order_id",
+                    "label": "Order Id",
+                    "description": "Order Id"
+                }
+            ]
+        }
+    ]
+}

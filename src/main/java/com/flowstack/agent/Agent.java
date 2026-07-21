@@ -488,7 +488,6 @@ public class Agent {
                 memory.addContent(new ModelSystemMessage(m));
             }
         }
-
         runner.runStep(startStep);
         return runner;
     }

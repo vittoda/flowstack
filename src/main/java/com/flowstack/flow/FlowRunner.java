@@ -328,10 +328,12 @@ public class FlowRunner {
         if (this._mLogModeEnabled) {
             runInstance.addToDebugLog();
         }
+        LOGGER.info("PReparing the steos.");
         runInstance.prepare();
         if (this._mIsDebugMode) {
             _mDebugState.addNextStep(runInstance);
         } else {
+            LOGGER.info("Added to execution queue");
             FlowExecutionQueue.INSTANCE.addToQueue(runInstance);
         }
     }

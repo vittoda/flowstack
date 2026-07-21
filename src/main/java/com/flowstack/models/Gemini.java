@@ -115,7 +115,6 @@ public class Gemini extends ModelConnection {
                 if (ma.result != null) {
                     output.put("output", ma.result);
                 }
-
             }
         }
 
