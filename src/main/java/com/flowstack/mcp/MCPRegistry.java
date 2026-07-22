@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -24,7 +25,7 @@ public class MCPRegistry {
         return _mServers.get(serverName);
     }
 
-    public static ObjectNode getToolDefinitionForToolCalling(String fullToolName) {
+    public static JsonNode getToolDefinitionForToolCalling(String fullToolName) {
         if (fullToolName.startsWith("agent_")) {
             return AgentTool.getDefinitionForFunctionCalling(fullToolName);
         }
@@ -34,7 +35,7 @@ public class MCPRegistry {
 
         MCPServer server = _mServers.get(serverName);
         MCPTool tool = server.getToolByName(toolName);
-        ObjectNode def = tool.getDefinitionForToolCalling();
+        ObjectNode def = (ObjectNode)tool.getDefinitionForToolCalling();
         // We need to override the name to prefix with server name;
         def.put("name", serverName + "_" + def.get("name").asText());
         return def;
@@ -44,11 +45,11 @@ public class MCPRegistry {
         try {
             InputStream is = new FileInputStream(file);
 
-            ObjectNode o = (ObjectNode) JsonUtils.MAPPER.readTree(is);
+            JsonNode o =  JsonUtils.MAPPER.readTree(is);
             ArrayNode servers = (ArrayNode) o.get("mcpServers");
             int len = servers.size();
             for (int i = 0; i < len; i++) {
-                ObjectNode serverObject = (ObjectNode) servers.get(i);
+                JsonNode serverObject = servers.get(i);
                 MCPServer serverDef = MCPServer.fromJSON(serverObject);
                 try {
                     serverDef.initialize();
@@ -95,6 +96,8 @@ public class MCPRegistry {
         ret.add("agent_runErrorStep");
         ret.add("agent_sendMessage");
         ret.add("agent_endFlow");
+        ret.add("agent_setStepContext");
+        
 
         return ret;
     }

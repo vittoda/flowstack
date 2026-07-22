@@ -74,34 +74,28 @@ public class FlowRunLog {
 
         public void setVariables(Variables variables) {
             variablesSnapshot = JsonUtils.MAPPER.createArrayNode();
-            for(String key : variables.keys()) {
+            for (String key : variables.keys()) {
                 Object v = variables.getValue(key);
                 ObjectNode vt = JsonUtils.MAPPER.createObjectNode();
                 vt.put("name", key);
-                if(v instanceof String) {
-                     vt.put("value", (String)variables.getValue(key));
-                }
-                else if(v instanceof Integer) {
-                    vt.put("value", (Integer)variables.getValue(key));
-                }
-                else if(v instanceof Long) {
-                    vt.put("value", (Long)variables.getValue(key));
-                }
-                else if(v instanceof Boolean) {
-                    vt.put("value", (Boolean)variables.getValue(key));
-                }
-                else if(v instanceof Double) {
-                    vt.put("value", (Double)variables.getValue(key));
-                }
-                else if(v instanceof Float) {
-                    vt.put("value", (Float)variables.getValue(key));
-                }
-                else if(v instanceof JsonNode) {
-                    vt.set("value", (JsonNode)variables.getValue(key));
+                if (v instanceof String) {
+                    vt.put("value", (String) variables.getValue(key));
+                } else if (v instanceof Integer) {
+                    vt.put("value", (Integer) variables.getValue(key));
+                } else if (v instanceof Long) {
+                    vt.put("value", (Long) variables.getValue(key));
+                } else if (v instanceof Boolean) {
+                    vt.put("value", (Boolean) variables.getValue(key));
+                } else if (v instanceof Double) {
+                    vt.put("value", (Double) variables.getValue(key));
+                } else if (v instanceof Float) {
+                    vt.put("value", (Float) variables.getValue(key));
+                } else if (v instanceof JsonNode) {
+                    vt.set("value", (JsonNode) variables.getValue(key));
                 }
                 variablesSnapshot.add(vt);
             }
-            
+
         }
 
         public void setInstructions(String instructions) {
@@ -141,7 +135,7 @@ public class FlowRunLog {
                 ret.set("toolResult", toolResult);
                 ret.set("memory", memory);
 
-                if(variablesSnapshot != null) {
+                if (variablesSnapshot != null) {
                     ret.set("variables", variablesSnapshot);
                 }
 
@@ -149,27 +143,23 @@ public class FlowRunLog {
             return ret;
         }
 
-        public void setLLMResponse(ObjectNode llmResponse) {
-            try {
-                llmResponse = (ObjectNode) JsonUtils.MAPPER.readTree(llmResponse.toString());
-                this.llmResponse = llmResponse;
-                if (llmResponse.has("content")) {
-                    JsonNode c = llmResponse.get("content");
-                    if (c != null && c.isTextual()) {
-                        String cs = c.asText();
-                        if (cs.length() > 0) {
-                            try {
-                                ObjectNode content = (ObjectNode) JsonUtils.MAPPER.readTree(cs);
-                                llmResponse.set("content", content);
-                            } catch (JsonProcessingException e) {
-                                //Exception in parsing. Set the content as is. Si ignore it.
+        public void setLLMResponse(JsonNode llmResponseOriginal) {
+            ObjectNode llmResponse = (ObjectNode)llmResponseOriginal.deepCopy(); // We are closing as we need to modify
+            this.llmResponse = llmResponse;
+            if (llmResponse.has("content")) {
+                JsonNode c = llmResponse.get("content");
+                if (c != null && c.isTextual()) {
+                    String cs = c.asText();
+                    if (cs.length() > 0) {
+                        try {
+                            JsonNode content = JsonUtils.MAPPER.readTree(cs);
+                            llmResponse.set("content", content);
+                        } catch (JsonProcessingException e) {
+                            // Exception in parsing. Set the content as is. Si ignore it.
 
-                            }
                         }
                     }
                 }
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();// Ignore
             }
         }
 

@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,6 +77,7 @@ public class FlowRunner {
     Variables variables = new Variables();
 
     private String _mFlowResult = null;
+    private HashMap<String, List<String>> _mStepAdditonalContext = new HashMap<>();
 
     FlowRunner(String sessionId, StepGroup steps,
             boolean debugMode, boolean logModeEnabled, boolean archiveEnabled,
@@ -158,6 +160,20 @@ public class FlowRunner {
         res.put("result", _mFlowResult);
 
         return res;
+    }
+
+    public void setAdditionalContextForStep(String stepName, String context)  {
+        List<String> contexts = _mStepAdditonalContext.get(stepName);
+        if(contexts == null) {
+            contexts = new LinkedList<>();
+            _mStepAdditonalContext.put(stepName, contexts);
+        }
+
+        contexts.add(context);
+    }
+
+    public List<String> getAdditionalContextsForStep(String stepName) {
+        return _mStepAdditonalContext.get(stepName);
     }
 
     public Agent getAgentInstance() {

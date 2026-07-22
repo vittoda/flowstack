@@ -62,5 +62,25 @@
                 "message"
             ]
         }
+    },
+     "agent_setStepContext": {
+        "name": "agent_setStepContext",
+        "description": "Set context information for a step. This can be used when for Agent type step, where some additional dynamic information needs to be passed, which cannot be available during initial step generation. The caller can call this method and set it. FOr example, if result from one agent needs to be passed to another agent",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "string",
+                    "description": "context in text format"
+                },
+                "stepName": {
+                    "type": "string",
+                    "description": "step name to receive this context"
+                }
+            },
+            "required": [
+                "context","stepName"
+            ]
+        }
     }
 }

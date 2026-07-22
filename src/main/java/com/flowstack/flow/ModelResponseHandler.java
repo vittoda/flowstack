@@ -4,7 +4,7 @@ import com.flowstack.models.ModelJSONResponse;
 import com.flowstack.models.ModelResponse;
 import com.flowstack.models.ModelThinkingResponse;
 import com.flowstack.models.ModelToolResponse;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -34,7 +34,7 @@ public class ModelResponseHandler {
 
         if (response instanceof ModelJSONResponse) {
             ModelJSONResponse jsonRespnse = (ModelJSONResponse) response;
-            ObjectNode content = jsonRespnse.responseData;
+            JsonNode content = jsonRespnse.responseData;
             // Probably steps.
             if (content.has("steps")) {
                 StepsValidator sv = new StepsValidator();
@@ -108,11 +108,25 @@ public class ModelResponseHandler {
                 flowRunner.currentStepCompleted(true);
                 return;
             }
+            else if (toolResponse.toolName.equals("agent_setStepContext")) {
+                String stepName = toolResponse.arguments.get("stepName").asText();
+                String context = toolResponse.arguments.get("context").asText();
+                LOGGER.info("Calling agent_setStepContext for step '{}'", stepName);
+                flowRunner.setAdditionalContextForStep(stepName, context);
+                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                toolResult.put("status","Success");
+                toolResult.put("toolResult","Set context");
+                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
+                flowRunner.currentStepCompleted(true);
+                return;
+            }
+            
             ToolRunner runner = new ToolRunner(toolResponse.toolName, toolResponse.arguments);
 
             long startTime = System.currentTimeMillis();
             ToolCallResponse toolResult = runner.run(flowRunner.getAgentInstance());
             long endTime = System.currentTimeMillis();
+            LOGGER.info("Tool call completed for tool '{}'.", toolResponse.toolName);
             stepRunInstance.addLogInfo("toolRunDuration", (endTime - startTime));
             flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult.getResultJSON());
             // Take the next step from current tool run step, and proceed.

@@ -6,8 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.channels.base.CommChannelBase;
 import com.flowstack.channels.base.CommChannelException;
 import com.flowstack.channels.base.CommChannelInstance;
@@ -21,7 +21,7 @@ public class ChannelRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistry.class);
 
     private static final HashMap<String, CommChannelBase> _mRegisteredChannels = new HashMap<>();
-    private static final HashMap<String, ObjectNode> _mChannelDefinitions = new HashMap<>();
+    private static final HashMap<String, JsonNode> _mChannelDefinitions = new HashMap<>();
 
     public static void loadChannels() {
         // ServiceLoader looks for files in META-INF/services
@@ -35,7 +35,7 @@ public class ChannelRegistry {
     }
 
     public static CommChannelInstance createInstanceFor(String channelInstanceKey, String agentKey) {
-        ObjectNode channelInstanceDef = _mChannelDefinitions.get(channelInstanceKey);
+        JsonNode channelInstanceDef = _mChannelDefinitions.get(channelInstanceKey);
         if(channelInstanceDef == null) {
             LOGGER.error("Channel instance config is not defined for instance id "+channelInstanceKey);
             return null;
@@ -46,15 +46,15 @@ public class ChannelRegistry {
             return null;
         }
 
-        ObjectNode config = null;
+        JsonNode config = null;
         if(channelInstanceDef.has("config") && !channelInstanceDef.get("config").isNull()) {
-            config = (ObjectNode)channelInstanceDef.get("config");
+            config = channelInstanceDef.get("config");
         }
         return channel.createInstance(agentKey, config);
     }
 
     public static CommChannelBase getChannelFor(String channelInstanceId) {
-        ObjectNode on = _mChannelDefinitions.get(channelInstanceId);
+        JsonNode on = _mChannelDefinitions.get(channelInstanceId);
         return _mRegisteredChannels.get(on.get("channel").asText());
     }
 
@@ -62,11 +62,11 @@ public class ChannelRegistry {
         try {
             InputStream is = new FileInputStream(file);
 
-            ObjectNode o = (ObjectNode) JsonUtils.MAPPER.readTree(is);
+            JsonNode o = JsonUtils.MAPPER.readTree(is);
             ArrayNode channelInstances = (ArrayNode) o.get("channelInstances");
             int len = channelInstances.size();
             for (int i = 0; i < len; i++) {
-                ObjectNode channelInstanceConfig = (ObjectNode) channelInstances.get(i);
+                JsonNode channelInstanceConfig = channelInstances.get(i);
                 String channelInstanceId = channelInstanceConfig.get("id").asText();
                 _mChannelDefinitions.put(channelInstanceId, channelInstanceConfig);
             }

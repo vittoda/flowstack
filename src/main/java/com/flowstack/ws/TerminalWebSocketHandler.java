@@ -8,6 +8,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 import com.flowstack.cli.CliCommand;
@@ -61,7 +62,7 @@ public class TerminalWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String clientId = _getClientId(session);
         String payload = message.getPayload();
-        ObjectNode node = (ObjectNode) JsonUtils.MAPPER.readTree(payload);
+        JsonNode node =  JsonUtils.MAPPER.readTree(payload);
         String commandName = node.get("command").asText();
         if(commandName.equals(USER_RESPONSE_COMMAND)) {
             handleUserRespose((ObjectNode)node.get("params"));

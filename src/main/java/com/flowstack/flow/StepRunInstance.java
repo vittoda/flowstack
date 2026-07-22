@@ -255,7 +255,10 @@ public class StepRunInstance {
     private void runAgentNow() throws FlowException {
         // Here we are sending the instruction new
         String agentId = _mStepDefinition.agent;
-        AgentMessage am = new AgentMessage(_mStepDefinition.instruction, this._mFlowRunner);
+
+        List<String> additionalContext = _mFlowRunner.getAdditionalContextsForStep(_mStepDefinition.name);
+        LOGGER.info("Adding message for agent in step '{}'. Additional context is NULL ? {}", _mStepDefinition.name, (additionalContext == null));
+        AgentMessage am = new AgentMessage(_mStepDefinition.instruction, additionalContext, this._mFlowRunner);
         Orchestrator.INSTANCE.addMessage(agentId, am);
 
         // We need mark the flow to hold.

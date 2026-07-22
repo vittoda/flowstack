@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -71,18 +72,18 @@ public class AgentRegistry {
 
     public static void loadFromFile(String file) throws IOException {
         String overridesFile = "agentOverrides.json";
-        ObjectNode overrides = null;
+        JsonNode overrides = null;
         if (new File(overridesFile).exists()) {
             try (FileInputStream is = new FileInputStream(new File(overridesFile))) {
-                overrides = (ObjectNode) JsonUtils.MAPPER.readTree(is);
+                overrides =  JsonUtils.MAPPER.readTree(is);
             }
         }
         try (FileInputStream is = new FileInputStream(new File(file))) {
-            ObjectNode on = (ObjectNode) JsonUtils.MAPPER.readTree(is);
+            JsonNode on = JsonUtils.MAPPER.readTree(is);
             ArrayNode agentList = (ArrayNode) on.get("agents");
             int size = agentList.size();
             for (int i = 0; i < size; i++) {
-                ObjectNode agentNode = (ObjectNode) agentList.get(i);
+                JsonNode agentNode = agentList.get(i);
                 Agent agentInstance = new Agent();
                 try {
                     agentInstance.loadAgentFromJSON(agentNode, file);
@@ -92,7 +93,7 @@ public class AgentRegistry {
                     continue;
                 }
                 if (overrides != null && overrides.has(agentInstance.id)) {
-                    agentInstance.loadFromOverrides((ObjectNode) overrides.get(agentInstance.id));
+                    agentInstance.loadFromOverrides( overrides.get(agentInstance.id));
                 }
 
                 AgentRegistry.add(agentInstance);

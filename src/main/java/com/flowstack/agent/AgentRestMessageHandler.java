@@ -25,7 +25,7 @@ public class AgentRestMessageHandler implements OnMessageHandler {
 
         String userMessage = "Message Source : REST communication channel event\n\n" + msg.getText() ;
         try {
-            FlowRunner runner = agent.run(userMessage, null, false, false, false, 
+            FlowRunner runner = agent.run(userMessage, null, null, false, false, false, 
                     msg.getContext(), _mChannelInstance,
                     null);
             return new OutputMessage("Session Id : " + runner.getSessionId(), msg.getContext());

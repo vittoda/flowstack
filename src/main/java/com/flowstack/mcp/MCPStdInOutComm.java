@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
@@ -33,7 +34,7 @@ public class MCPStdInOutComm extends MCPComm {
     }
 
     @Override
-    public ObjectNode sendRequest(ObjectNode request) throws MCPException {
+    public JsonNode sendRequest(ObjectNode request) throws MCPException {
         if (_mProcess == null) {
 
             try {
@@ -77,7 +78,7 @@ public class MCPStdInOutComm extends MCPComm {
         }
     }
 
-    public ObjectNode readResponse() throws IOException {
+    public JsonNode readResponse() throws IOException {
         String line = _mReader.readLine();
 
         if (line == null) {
@@ -90,7 +91,7 @@ public class MCPStdInOutComm extends MCPComm {
         }
 
         try {
-            return (ObjectNode) JsonUtils.MAPPER.readTree(line);
+            return JsonUtils.MAPPER.readTree(line);
         } catch (Exception e) {
             throw new IOException("Invalid JSON from MCP: " + line, e);
         }

@@ -1,0 +1,43 @@
+{
+    "agents": [
+        {
+            "name": "Shell",
+            "model": "openai/gpt-4o",
+            "id": "shell",
+            "description": "Shell commands",
+            "context": {
+                "file": "./examples/multi_agent/shellSystemPrompt.txt"
+            },
+            "mcpServers": [
+                "shell"
+            ]
+        },
+        {
+            "name": "SQLite",
+            "id": "sqlite",
+            "model": "openai/gpt-4o",
+            "description": "SQLite Integration",
+            "context": {
+                "file": "./examples/multi_agent/sqliteContext.txt"
+            },
+            "mcpServers": [
+                "sqlite"
+            ]
+        },
+        {
+            "name": "Event Agent",
+            "model": "openai/gpt-4o",
+            "id": "eventAgent",
+            "description": "Agent that gets triggered as part of an event",
+            "context": {
+                "file": "./examples/multi_agent/eventAgent.txt"
+            },
+            "mcpServers": [],
+            "agents": [
+                "sqlite",
+                "shell"
+            ],
+            "channels": []
+        }
+    ]
+}

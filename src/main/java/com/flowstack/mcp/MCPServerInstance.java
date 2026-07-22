@@ -2,6 +2,7 @@ package com.flowstack.mcp;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 
@@ -27,15 +28,15 @@ public class MCPServerInstance {
         request.put("id", UUID.randomUUID().toString());
         request.put("method", "initialize");
 
-        ObjectNode result = _mConnection.sendRequest(request);
-        result = (ObjectNode)result.get("result");
+        JsonNode result = _mConnection.sendRequest(request);
+        result = result.get("result");
     }
 
-    public ToolCallResponse runTool(String toolName, ObjectNode arguments) throws MCPException {
+    public ToolCallResponse runTool(String toolName, JsonNode arguments) throws MCPException {
         return _runCommand(toolName, arguments);
     }
 
-    private ToolCallResponse _runCommand(String toolName, ObjectNode arguments) throws MCPException {
+    private ToolCallResponse _runCommand(String toolName, JsonNode arguments) throws MCPException {
         MCPTool tool = _mServerDef.getToolByName(toolName);
         ObjectNode request = JsonUtils.MAPPER.createObjectNode();
         request.put("jsonrpc", "2.0");
@@ -46,7 +47,7 @@ public class MCPServerInstance {
         params.put("name", tool.name);
         params.set("arguments", arguments);
 
-        ObjectNode result = _mConnection.sendRequest(request);
+        JsonNode result = _mConnection.sendRequest(request);
         ToolCallResponse tcr = ToolCallResponse.fromResponse(result);
         return tcr;
 

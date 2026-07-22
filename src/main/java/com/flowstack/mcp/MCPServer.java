@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -49,7 +50,7 @@ public class MCPServer {
         this.hasErrors = hasErrors;
     }
 
-    public static MCPServer fromJSON(ObjectNode json) throws MCPException {
+    public static MCPServer fromJSON(JsonNode json) throws MCPException {
         MCPServer ms = new MCPServer();
         ms._fromJSON(json);
         return ms;
@@ -63,10 +64,10 @@ public class MCPServer {
         request.put("method", "initialize");
 
         MCPComm conn = getConnection();
-        ObjectNode result = conn.sendRequest(request);
-        result = (ObjectNode) result.get("result");
+        JsonNode result = conn.sendRequest(request);
+        result = result.get("result");
 
-        ObjectNode serverInfo = (ObjectNode) result.get("serverInfo");
+        JsonNode serverInfo =result.get("serverInfo");
         this.name = serverInfo.get("name").asText();
         this.version = serverInfo.get("version").asText();
 
@@ -74,7 +75,7 @@ public class MCPServer {
         conn.close();
     }
 
-    private void _fromJSON(ObjectNode json) throws MCPException {
+    private void _fromJSON(JsonNode json) throws MCPException {
         String id = null;
         if (json.has("id")) {
             id = json.get("id").asText();
@@ -93,7 +94,7 @@ public class MCPServer {
             this.category = json.get("category").asText();
         }
 
-        ObjectNode connectionDef = (ObjectNode) json.get("connection");
+        JsonNode connectionDef = json.get("connection");
 
         String connType = connectionDef.get("type").asText();
         _mConnectionType = connType;
@@ -109,10 +110,10 @@ public class MCPServer {
     private void _processToolsDef(ArrayNode tools) throws MCPException {
         int len = tools.size();
         for (int i = 0; i < len; i++) {
-            ObjectNode t = (ObjectNode) tools.get(i);
+            JsonNode t =  tools.get(i);
             String name = t.get("name").asText();
             String description = t.get("description").asText();
-            ObjectNode inputSchema = (ObjectNode) t.get("inputSchema");
+            JsonNode inputSchema = t.get("inputSchema");
             _mTools.put(name, new MCPTool(name, description, inputSchema));
         }
     }
@@ -125,8 +126,8 @@ public class MCPServer {
         request.put("id", UUID.randomUUID().toString());
         request.put("method", "tools/list");
 
-        ObjectNode result = conn.sendRequest(request);
-        result = (ObjectNode) result.get("result");
+        JsonNode result = conn.sendRequest(request);
+        result = result.get("result");
 
         if (result.has("tools")) {
             ArrayNode tools = (ArrayNode) result.get("tools");

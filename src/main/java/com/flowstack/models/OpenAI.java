@@ -266,7 +266,7 @@ public class OpenAI extends ModelConnection {
             throws ModelException {
 
         if (response.has("usage")) {
-            ObjectNode usageMetadata = (ObjectNode) response.get("usage");
+            JsonNode usageMetadata = response.get("usage");
             int outputTokenSize = usageMetadata.get("completion_tokens").asInt();
             int inputTokenSize = usageMetadata.get("prompt_tokens").asInt();
 
@@ -285,8 +285,8 @@ public class OpenAI extends ModelConnection {
         }
 
         ArrayNode choices = (ArrayNode) response.get("choices");
-        ObjectNode choice = (ObjectNode) choices.get(0); // Asume I will get at least one.
-        ObjectNode message = (ObjectNode) choice.get("message");
+        JsonNode choice = choices.get(0); // Asume I will get at least one.
+        JsonNode message = choice.get("message");
         // Tool calls gets the preference
 
         if (message.has("tool_calls") && (!message.get("tool_calls").isNull())) {
@@ -295,18 +295,18 @@ public class OpenAI extends ModelConnection {
             // Push it to the memory.
             memory.addContent(new ModelAssistantMessage(null, tool_calls));
 
-            ObjectNode tool = (ObjectNode) tool_calls.get(0);
-            ObjectNode function = (ObjectNode) tool.get("function");
+            JsonNode tool = tool_calls.get(0);
+            JsonNode function = tool.get("function");
             String name = function.get("name").asText();
             String id = tool.get("id").asText();
             JsonNode argumentsNode = function.get("arguments");
 
-            ObjectNode arguments;
+            JsonNode arguments;
             if (argumentsNode.isObject()) {
-                arguments = (ObjectNode) argumentsNode;
+                arguments = argumentsNode;
             } else {
                 try {
-                    arguments = (ObjectNode) JsonUtils.MAPPER.readTree(argumentsNode.asText());
+                    arguments = JsonUtils.MAPPER.readTree(argumentsNode.asText());
                 } catch (JsonProcessingException e) {
                     throw new ModelException(e);
                 }
@@ -317,7 +317,7 @@ public class OpenAI extends ModelConnection {
             memory.addContent(new ModelAssistantMessage(m, null));
             if (jsonRespnse) {
                 try {
-                    ObjectNode contentJSON = (ObjectNode) JsonUtils.MAPPER.readTree(m);
+                    JsonNode contentJSON =  JsonUtils.MAPPER.readTree(m);
                     return new ModelJSONResponse(message, contentJSON);
                 } catch (JsonProcessingException e) {
                     throw new ModelException(e);

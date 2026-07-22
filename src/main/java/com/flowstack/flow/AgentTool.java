@@ -5,20 +5,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.flowstack.JsonUtils;
 import com.flowstack.mcp.ToolCallResponse;
 
 
 public class AgentTool {
 
-    private static ObjectNode _mAllFunctionsDef = null;
+    private static JsonNode _mAllFunctionsDef = null;
 
-    public ToolCallResponse runTool(String toolName, ObjectNode arguments) {
+    public ToolCallResponse runTool(String toolName, JsonNode arguments) {
         return null;
     }
 
-    public static ObjectNode getDefinitionForFunctionCalling(String toolName) {
+    public static JsonNode getDefinitionForFunctionCalling(String toolName) {
         if (_mAllFunctionsDef == null) {
             try {
                 InputStream is = AgentTool.class
@@ -26,7 +26,7 @@ public class AgentTool {
                         .getResourceAsStream("agentTools.json");
 
                 String jsonText = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                _mAllFunctionsDef =  (ObjectNode) JsonUtils.MAPPER.readTree(jsonText);
+                _mAllFunctionsDef =   JsonUtils.MAPPER.readTree(jsonText);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -34,7 +34,7 @@ public class AgentTool {
             }
         }
 
-        return (ObjectNode)_mAllFunctionsDef.get(toolName);
+        return _mAllFunctionsDef.get(toolName);
 
     }
 
@@ -46,6 +46,8 @@ public class AgentTool {
         ret.add("agent_runErrorStep");
         ret.add("agent_sendMessage");
          ret.add("agent_endFlow");
+         ret.add("agent_setStepContext");
+
 
         return ret;
     }

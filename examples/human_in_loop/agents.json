@@ -6,7 +6,7 @@
              "model" : "openai/gpt-4o",
             "description": "SQLite Integration",
             "context": {
-                "file": "sqliteContext.txt"
+                "file": "./examples/human_in_loop/sqliteContext.txt"
             },
             "hitlConfig" :{
                 "targets" : [

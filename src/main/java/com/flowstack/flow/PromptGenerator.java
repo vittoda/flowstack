@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.agent.VariableDef;
 import com.flowstack.mcp.MCPRegistry;
 
@@ -71,7 +71,7 @@ public class PromptGenerator {
             toolNames.sort(String::compareTo);
             StringBuilder tools = new StringBuilder("#TOOLS\n(Format - Tool name:Description)\n\n");
             for (String toolName : toolNames) {
-                ObjectNode desc = MCPRegistry.getToolDefinitionForToolCalling(toolName);
+                JsonNode desc = MCPRegistry.getToolDefinitionForToolCalling(toolName);
                 tools.append(desc.get("name").asText()).append(":").append(desc.get("description").asText())
                         .append("\n");
             }

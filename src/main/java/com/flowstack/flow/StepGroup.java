@@ -28,7 +28,7 @@ public class StepGroup {
         Step firstStep = null;
         String[] stepNames = new String[steps.size()];
         for (int i = 0; i < len; i++) {
-            ObjectNode step = (ObjectNode) steps.get(i);
+            JsonNode step = steps.get(i);
             String name = step.get("name").asText();
             stepNames[i] = name;
             JsonNode desc = step.get("description");
@@ -80,7 +80,7 @@ public class StepGroup {
             HITLMessage hitlConfig = null;
             if(hitlNeeded) {
                 //Get and parse the content
-                ObjectNode hitlMessageNode = (ObjectNode)step.get("hitlMessage");
+                JsonNode hitlMessageNode = step.get("hitlMessage");
                 hitlConfig = HITLMessage.loadFromJSON(hitlMessageNode);
             }
 
@@ -89,7 +89,7 @@ public class StepGroup {
                 agent = step.get("agent").asText();
             }
 
-            Step st = new Step(name, description, instruction, type, modelName, agent, nextSteps, tools, jsonResponse, 
+            Step st = new Step(name, description, instruction, null, type, modelName, agent, nextSteps, tools, jsonResponse, 
                 hitlNeeded, hitlConfig);
             _mSteps.put(name, st);
             if(i == 0) {

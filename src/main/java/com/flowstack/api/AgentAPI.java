@@ -94,7 +94,7 @@ public class AgentAPI {
 				}
 			}
 
-			FlowRunner runner = agentInstance.run(runRequest.getInput(), variableValues,
+			FlowRunner runner = agentInstance.run(runRequest.getInput(), null, variableValues,
 				runRequest.getEnableDebug(), runRequest.getEnableLog(), runRequest.getEnableArchive(), null, null, null);
 
 			ObjectNode result = JsonUtils.MAPPER.createObjectNode();

@@ -30,12 +30,12 @@ public class ToolCallResponse {
 
     }
 
-    static ToolCallResponse fromResponse(ObjectNode r) throws MCPException {
+    static ToolCallResponse fromResponse(JsonNode r) throws MCPException {
         ToolCallResponse res = new ToolCallResponse();
         if (r.has("error")) {
             res.status = ToolCallStatus.FAILED;
-            ObjectNode error = (ObjectNode) r.get("error");
-            ObjectNode errorData = (ObjectNode) error.get("data");
+            JsonNode error = r.get("error");
+            JsonNode errorData = error.get("data");
             res._mErrorType = errorData.get("errorType").asText();
             if (errorData.has("additionalData") && (!errorData.get("additionalData").isNull())) {
                 res._mErrorAdditionalData = errorData.get("additionalData");
@@ -49,7 +49,7 @@ public class ToolCallResponse {
                 LOGGER.warn("Tool response '{}'",r.toPrettyString());
                 throw new MCPException("Tool call suceeded. But respnse did not have any 'result' field");
             }
-            ObjectNode resultNode = (ObjectNode)r.get("result");
+            JsonNode resultNode = r.get("result");
             if((!resultNode.has("content")) || resultNode.get("content").isNull()) {
                 LOGGER.warn("Tool response '{}'",r.toPrettyString());
                 throw new MCPException("Tool call suceeded. But respnse did not have any 'content' field inside 'result' node");
@@ -58,7 +58,7 @@ public class ToolCallResponse {
             if(contents.size() == 0) {
                  throw new MCPException("Tool call suceeded. But 'content' in the response is empty");
             }
-            ObjectNode contentNode = (ObjectNode)contents.get(0);
+            JsonNode contentNode = contents.get(0);
             String type = contentNode.get("type").asText();
             if (!type.equals("text")) {
                 throw new MCPException(
@@ -66,7 +66,7 @@ public class ToolCallResponse {
             }
             JsonNode textNode = contentNode.get("text");
             try {
-                res._mResult = (ObjectNode) JsonUtils.MAPPER.readTree(textNode.textValue());
+                res._mResult = JsonUtils.MAPPER.readTree(textNode.textValue());
             } catch (Exception e) {
                 LOGGER.warn("Not able to parse the content as JSON. Passing it as it is");
                 res._mResult = textNode;

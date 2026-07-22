@@ -50,8 +50,8 @@ public class Agent {
     private static final Logger LOGGER = LoggerFactory.getLogger(Agent.class);
 
     // Configs
-    private ObjectNode _mSystemDef = null;
-    private ObjectNode _mOverrideDef = null;
+    private JsonNode _mSystemDef = null;
+    private JsonNode _mOverrideDef = null;
     private HITLConfig _mHITLConfig = null;
 
     public String name = null;
@@ -92,11 +92,11 @@ public class Agent {
         this.description = description;
     }
 
-    ObjectNode getDefToSave() {
+    JsonNode getDefToSave() {
         return _mOverrideDef;
     }
 
-    public ObjectNode getSystemDef() {
+    public JsonNode getSystemDef() {
         return _mSystemDef;
     }
 
@@ -108,7 +108,7 @@ public class Agent {
         return _mModel;
     }
 
-    public void updateConfig(ObjectNode node) {
+    public void updateConfig(JsonNode node) {
         if (!node.at("/debug").isMissingNode()) {
             this.debug = node.at("/debug").booleanValue();
         }
@@ -135,7 +135,7 @@ public class Agent {
                         CommChannelInstance channel = am.triggerringFlow != null
                                 ? am.triggerringFlow.getTriggerringChannel()
                                 : null;
-                        this.run(am.prompt,
+                        this.run(am.prompt, am.additionalContext,
                                 ctx, channel, am.triggerringFlow);
                     } catch (FlowException e) {
                         e.printStackTrace();
@@ -195,7 +195,7 @@ public class Agent {
         return node;
     }
 
-    void loadAgentFromJSON(ObjectNode an, String file) throws IOException {
+    void loadAgentFromJSON(JsonNode an, String file) throws IOException {
         this.name = an.get("name").asText();
         this.id = an.get("id").asText();
         this.description = an.get("description").asText();
@@ -210,22 +210,25 @@ public class Agent {
             this._mContext = node.asText();
         } else {
             String contextFile = node.get("file").asText();
-            Path path = Paths.get(file);
-            Path parent = path.getParent();
-            if (parent != null) {
-                contextFile = parent + File.separator + contextFile;
+            if ((!new File(contextFile).exists())) {
+                Path path = Paths.get(file);
+                Path parent = path.getParent();
+                if (parent != null) {
+                    contextFile = parent + File.separator + contextFile;
+                }
             }
             this._mContext = Files.readString(Paths.get(contextFile), StandardCharsets.UTF_8);
+
         }
         _mSystemDef = an;
         if (an.has("hitlConfig")) {
-            this._mHITLConfig = HITLConfig.loadFromJSON((ObjectNode) an.get("hitlConfig"));
+            this._mHITLConfig = HITLConfig.loadFromJSON(an.get("hitlConfig"));
         }
 
         if (an.has("variables")) {
             ArrayNode variables = (ArrayNode) an.get("variables");
             for (int i = 0; i < variables.size(); i++) {
-                ObjectNode on = (ObjectNode) variables.get(i);
+                JsonNode on = variables.get(i);
                 VariableDef vdef = new VariableDef(on.get("name").asText(), on.get("label").asText(),
                         on.get("description").asText());
                 _mVariableDefs.put(vdef.name, vdef);
@@ -260,7 +263,7 @@ public class Agent {
                                 String m = msg.getText().stripLeading();
                                 if (m.startsWith("{")) {
                                     try {
-                                        ObjectNode responseObject = (ObjectNode) JsonUtils.MAPPER.readTree(m);
+                                        JsonNode responseObject = JsonUtils.MAPPER.readTree(m);
                                         if (responseObject.has("type")) {
                                             String type = responseObject.get("type").asText();
                                             if (type.equals("hilConfirmationResponse")) {
@@ -278,12 +281,13 @@ public class Agent {
                                          * unhold a flow.
                                          */
                                         LOGGER.error(
-                                                "Response recieved from channel has parsing errors as JSON. Skipping rest of the processing",e);
+                                                "Response recieved from channel has parsing errors as JSON. Skipping rest of the processing",
+                                                e);
                                     }
                                 }
                                 String userMessage = "Message Source : communication channel event\n\n" + m;
                                 try {
-                                    run(userMessage, null, debug, logging, archive,
+                                    run(userMessage, null, null, debug, logging, archive,
                                             msg.getContext(), channelInstance, null);
                                     return null;
                                 } catch (FlowException e) {
@@ -294,11 +298,13 @@ public class Agent {
                             }
                         });
 
-                        _mChannels.put(name, new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(), false));
+                        _mChannels.put(name,
+                                new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(), false));
                     } catch (CommChannelException e) {
                         e.printStackTrace();
                         hasErrors = true;
-                        _mChannels.put(name, new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(),true));
+                        _mChannels.put(name,
+                                new AgentCommChannel(channelInstanceId, channel.getKey(), channel.getName(), true));
                     } catch (Exception e) {
                         e.printStackTrace();
                         hasErrors = true;
@@ -333,7 +339,7 @@ public class Agent {
                 userResponse);
     }
 
-    void loadFromOverrides(ObjectNode node) {
+    void loadFromOverrides(JsonNode node) {
         if (!node.at("/debug").isMissingNode()) {
             this.debug = node.at("/debug").booleanValue();
         }
@@ -367,8 +373,7 @@ public class Agent {
                 // Create server instance
                 MCPServerInstance instance = server.createInstance();
                 _mMCPServers.put(serverName, instance);
-            }
-            else {
+            } else {
                 LOGGER.error("Agent initialization error. MCP server '{}'' not found", serverName);
             }
 
@@ -386,8 +391,8 @@ public class Agent {
         _mAgentCapabilities = JsonUtils.MAPPER.createArrayNode();
         for (String key : _mAvailableAgentCards.keySet()) {
             AgentCard ac = _mAvailableAgentCards.get(key);
-            if(ac == null) {
-                LOGGER.error("Agent instance '{}' not found. This is referred in '{}'", key ,this.name);
+            if (ac == null) {
+                LOGGER.error("Agent instance '{}' not found. This is referred in '{}'", key, this.name);
                 this.hasErrors = true;
                 continue;
             }
@@ -398,12 +403,13 @@ public class Agent {
     }
 
     private FlowRunner prepareAndRunRootStep(String userMessage,
+            List<String> additionalInstructions,
             HashMap<String, Object> variableValues,
             boolean debug, boolean logging, boolean archive,
             MessageContext triggerringMessageContext, CommChannelInstance triggerringChannel,
             FlowRunner triggerringFlow) throws FlowException {
 
-        Step rootStep = new Step(Step.ROOT_STEP_NAME, "", userMessage, Step.STEP_TYPE_LLM,
+        Step rootStep = new Step(Step.ROOT_STEP_NAME, "", userMessage, additionalInstructions, Step.STEP_TYPE_LLM,
                 this._mModel, null,
                 new String[0], new String[0], true, false, null);
 
@@ -417,7 +423,9 @@ public class Agent {
     }
 
     public FlowRunner run(String userMessage,
-            MessageContext triggerringMessageContext, CommChannelInstance triggerringChannel,
+            List<String> additionalContext,
+            MessageContext triggerringMessageContext,
+            CommChannelInstance triggerringChannel,
             FlowRunner triggerringFlow) throws FlowException {
         boolean idebug = this.debug;
         boolean iarchive = this.archive;
@@ -428,18 +436,20 @@ public class Agent {
             iarchive = triggerringFlow.isArchiveEnabled();
             ilogging = triggerringFlow.isLogEnabled();
         }
-        return run(userMessage, null, idebug, ilogging, iarchive,
+        return run(userMessage, additionalContext, null, idebug, ilogging, iarchive,
                 triggerringMessageContext, triggerringChannel, triggerringFlow);
     }
 
     public FlowRunner run(String userMessage,
+            List<String> additionalContext,
             HashMap<String, Object> variableValues,
             boolean debug, boolean logging, boolean archive,
             MessageContext triggerringMessageContext, CommChannelInstance triggerringChannel,
             FlowRunner triggerringFlow) throws FlowException {
 
         // We are yet to generate the steps. So, use this to generate the steps and run.
-        return prepareAndRunRootStep(userMessage, variableValues, debug, logging, archive, triggerringMessageContext,
+        return prepareAndRunRootStep(userMessage, additionalContext, variableValues, debug, logging, archive,
+                triggerringMessageContext,
                 triggerringChannel, triggerringFlow);
     }
 
@@ -471,10 +481,19 @@ public class Agent {
         FlowMemory memory = runner.getMemory();
         memory.clear();
         if (startStep.equals(Step.ROOT_STEP_NAME)) {
+            LOGGER.info("This is toot step");
             // Add the system contexts;
             PromptGenerator pg = new PromptGenerator();
             List<String> systemInstructions = pg.getInitialStepSystemInstructionsForRoot(_mContext, _mToolNames,
                     _mAgentCapabilities, _mVariableDefs);
+            // For root step, we will have additional information.
+            List<String> additionalContextInstructions = sg.getStep(startStep).additionalContextInstructions;
+            LOGGER.info("Deciding to add additional system instrctions");
+            if (additionalContextInstructions != null) {
+                // This is dynamic additional instructions.
+                LOGGER.info("Adding additional instructions. Size {}",systemInstructions.size());
+                systemInstructions.addAll(additionalContextInstructions);
+            }
             memory.addContent(null);
             for (String m : systemInstructions) {
                 memory.addContent(new ModelSystemMessage(m));

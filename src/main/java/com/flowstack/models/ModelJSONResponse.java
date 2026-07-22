@@ -1,12 +1,12 @@
 package com.flowstack.models;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ModelJSONResponse extends ModelResponse {
 
-    public ObjectNode responseData = null;
+    public JsonNode responseData = null;
 
-    public ModelJSONResponse(ObjectNode assistantMessage, ObjectNode obj) {
+    public ModelJSONResponse(JsonNode assistantMessage, JsonNode obj) {
         super(assistantMessage);
         this.responseData = obj;
     }

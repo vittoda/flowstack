@@ -1,15 +1,15 @@
 package com.flowstack.models;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ModelToolResponse extends ModelResponse {
 
-    public ObjectNode arguments = null;
+    public JsonNode arguments = null;
     public String toolName = null;
     public String toolId = null;
 
 
-    public ModelToolResponse(ObjectNode assistantMessage, String toolName, String toolId, ObjectNode arguments) {
+    public ModelToolResponse(JsonNode assistantMessage, String toolName, String toolId, JsonNode arguments) {
         super(assistantMessage);
         this.toolName = toolName;
         this.arguments = arguments;

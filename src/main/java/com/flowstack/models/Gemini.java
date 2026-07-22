@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -219,18 +220,18 @@ public class Gemini extends ModelConnection {
             }
 
             String responseBody = response.body();
-            return handleResponse(memory, (ObjectNode) JsonUtils.MAPPER.readTree(responseBody), jsonResponse);
+            return handleResponse(memory, JsonUtils.MAPPER.readTree(responseBody), jsonResponse);
         } catch (IOException | InterruptedException e) {
             throw new ModelException(e);
         }
 
     }
 
-    private ModelResponse handleResponse(FlowMemory memory, ObjectNode response, boolean jsonRespnse)
+    private ModelResponse handleResponse(FlowMemory memory, JsonNode response, boolean jsonRespnse)
             throws ModelException {
 
         if (response.has("usageMetadata")) {
-            ObjectNode usageMetadata = (ObjectNode) response.get("usageMetadata");
+            JsonNode usageMetadata = response.get("usageMetadata");
             int outputTokenSize = usageMetadata.get("candidatesTokenCount").asInt();
             int inputTokenSize = usageMetadata.get("promptTokenCount").asInt();
 
@@ -251,7 +252,7 @@ public class Gemini extends ModelConnection {
                     "Invalid response from model. It does not contain expected fields. Error code 00100");
         }
 
-        ObjectNode content = (ObjectNode) ((ObjectNode) candidates.get(0)).get("content");
+        JsonNode content =  (candidates.get(0)).get("content");
         ArrayNode parts = (ArrayNode) content.get("parts");
         if (parts.size() == 0) {
             throw new ModelNonRecoverableException(
@@ -259,7 +260,7 @@ public class Gemini extends ModelConnection {
         }
 
         // We will use only one text respinse. Not sure on what case it will have more.
-        ObjectNode part = (ObjectNode) parts.get(0);
+        JsonNode part = parts.get(0);
         if (part.has("text")) {
             String m = part.get("text").asText();
             memory.addContent(new ModelAssistantMessage(m, null));
@@ -268,7 +269,7 @@ public class Gemini extends ModelConnection {
                     if (m.startsWith("```") && m.endsWith("```")) {
                         m = m.substring(7, m.length() - 3);
                     }
-                    ObjectNode contentJSON = (ObjectNode) JsonUtils.MAPPER.readTree(m);
+                    JsonNode contentJSON = JsonUtils.MAPPER.readTree(m);
                     LOGGER.info(contentJSON.toPrettyString());
 
                     return new ModelJSONResponse(part, contentJSON);
@@ -279,10 +280,10 @@ public class Gemini extends ModelConnection {
             }
             return new ModelTextResponse(part, m);
         } else if (part.has("functionCall")) {
-            ObjectNode functionCall = (ObjectNode) part.get("functionCall");
+            JsonNode functionCall =  part.get("functionCall");
             memory.addContent(new ModelAssistantMessage(null, functionCall));
             String name = functionCall.get("name").asText();
-            ObjectNode args = (ObjectNode) functionCall.get("args");
+            JsonNode args = functionCall.get("args");
             return new ModelToolResponse(part, name, null, args);
         }
         memory.addContent(new ModelAssistantMessage(part.toString(), null));

@@ -35,7 +35,7 @@ public class AgentCliCommMessageHandler implements OnMessageHandler {
             logging = options.get("logging").asBoolean();
         }
         try {
-            FlowRunner runner = agent.run(userMessage, null, false, logging, archive, 
+            FlowRunner runner = agent.run(userMessage, null, null, false, logging, archive, 
                     msg.getContext(), _mChannelInstance,
                     null);
             return new OutputMessage("Session Id : " + runner.getSessionId(), msg.getContext());

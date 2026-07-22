@@ -6,7 +6,7 @@
             "id": "sqlite_and_gmail",
             "description": "SQLite and Gmail integration",
             "context": {
-                "file": "gmailAndSqliteContext.txt"
+                "file": "./examples/variables/gmailAndSqliteContext.txt"
             },
             "hilWebhookURL": "http://localhost:8090/hil",
             "mcpServers": [

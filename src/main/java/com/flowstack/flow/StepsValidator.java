@@ -23,7 +23,7 @@ public class StepsValidator {
         ArrayNode validationErrors = JsonUtils.MAPPER.createArrayNode();
         int len = steps.size();
         for (int i = 0; i < len; i++) {
-            ObjectNode step = (ObjectNode) steps.get(i);
+            JsonNode step = steps.get(i);
             ArrayNode stepErrors = validateStep(step, supportedTools, i);
             validationErrors.addAll(stepErrors);
 
@@ -106,7 +106,7 @@ public class StepsValidator {
 
     }
 
-    public ArrayNode validateStep(ObjectNode step, List<String> supportedTools, int index) {
+    public ArrayNode validateStep(JsonNode step, List<String> supportedTools, int index) {
         ArrayNode result = JsonUtils.MAPPER.createArrayNode();
         String stepIdentifier = null;
         if (!step.has("name")) {
@@ -218,7 +218,7 @@ public class StepsValidator {
                     } else if (!step.get("hitlMessage").isObject()) {
                         result.add("In step '" + stepIdentifier + "' hitlMessage should be of object type");
                     } else {
-                        ObjectNode hitlMessage = (ObjectNode) step.get("hitlMessage");
+                        JsonNode hitlMessage = step.get("hitlMessage");
                         ArrayNode results1 = validateHitlConfig(hitlMessage, stepIdentifier);
                         result.addAll(results1);
                     }
@@ -249,7 +249,7 @@ public class StepsValidator {
 
         // Finally check of there are any fields that are not supported.
         StringBuilder unsupportedFields = new StringBuilder();
-        ObjectNode stepNode = (ObjectNode) step;
+        JsonNode stepNode = step;
 
         Iterator<String> fieldNames = stepNode.fieldNames();
 
@@ -280,7 +280,7 @@ public class StepsValidator {
         return result;
     }
 
-    private ArrayNode validateHitlConfig(ObjectNode hitlMessage, String stepIdentifier) {
+    private ArrayNode validateHitlConfig(JsonNode hitlMessage, String stepIdentifier) {
         ArrayNode result = JsonUtils.MAPPER.createArrayNode();
         if (!hitlMessage.has("message")) {
             result.add("In step '" + stepIdentifier + "' hitlMessage should have 'message' field of type string");

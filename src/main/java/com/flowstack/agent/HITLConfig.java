@@ -1,7 +1,7 @@
 package com.flowstack.agent;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class HITLConfig {
 
@@ -16,11 +16,11 @@ public class HITLConfig {
         this.targets = targets;
     }
 
-    public static HITLConfig loadFromJSON(ObjectNode node) {
+    public static HITLConfig loadFromJSON(JsonNode node) {
         ArrayNode targetArray = (ArrayNode)node.get("targets");
         HITLTarget[] targets = new HITLTarget[targetArray.size()];
         for(int i=0;i<targetArray.size();i++) {
-            ObjectNode on = (ObjectNode)targetArray.get(i);
+            JsonNode on = targetArray.get(i);
             String type = on.get("type").asText();
             String instance = null;
             if(type.equals(HITL_TARGET_TYPE_WEBHOOK) || type.equals(HITL_TARGET_TYPE_CHANNEL)) {

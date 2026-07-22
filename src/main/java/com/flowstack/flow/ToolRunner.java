@@ -2,6 +2,7 @@ package com.flowstack.flow;
 
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.agent.Agent;
 import com.flowstack.mcp.MCPException;
@@ -13,9 +14,9 @@ public class ToolRunner {
     private String _mServerName = null;
     private String _mToolName = null;
 
-    private ObjectNode _mArguments = null;
+    private JsonNode _mArguments = null;
 
-    public ToolRunner(String functionCallName, ObjectNode arguments) {
+    public ToolRunner(String functionCallName, JsonNode arguments) {
         int index = functionCallName.indexOf("_");
         _mServerName = functionCallName.substring(0, index);
         _mToolName = functionCallName.substring(index+1);

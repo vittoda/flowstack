@@ -1,12 +1,12 @@
 package com.flowstack.models;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ToolMessage {
 
-    public ObjectNode toolDefinition = null;
+    public JsonNode toolDefinition = null;
 
-    public ToolMessage(ObjectNode tool) {
+    public ToolMessage(JsonNode tool) {
         this.toolDefinition = tool;
     }
     

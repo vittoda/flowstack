@@ -1,6 +1,8 @@
 package com.flowstack.flow;
 
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
@@ -25,8 +27,11 @@ public class Step {
 
     public boolean hitlNeeded = false;
     public HITLMessage hitlMessage = null;
+    public List<String> additionalContextInstructions = null;
 
-    public Step(String name, String description, String instruction, String type, String modelName, String agent,
+    public Step(String name, String description, String instruction, 
+            List<String> additionalContextInstructions, //Primarily used when passing info from one agent to another to second agents root step
+            String type, String modelName, String agent,
             String[] nextSteps, String[] tools, boolean jsonResponse, 
             boolean hitlNeeded, HITLMessage hitlMessage) {
         this.name = name;
@@ -40,6 +45,7 @@ public class Step {
         this.hitlNeeded = hitlNeeded;
         this.agent = agent;
         this.hitlMessage = hitlMessage;
+        this.additionalContextInstructions = additionalContextInstructions;
     }
 
     public ObjectNode getJSON(boolean extended) {
@@ -64,7 +70,7 @@ public class Step {
 
     public static Step getErrorStrep(String allStepNames[], String modelName) {
         String[] tools = { "agent_runStep", "agent_runErrorStep" };
-        return new Step("__error__", "Error handler step", ERROR_INSTRUCTION, "LLM", 
+        return new Step("__error__", "Error handler step", ERROR_INSTRUCTION, null, "LLM", 
             modelName,null,
                 allStepNames, tools, true, false,null);
     }
