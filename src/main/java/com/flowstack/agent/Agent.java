@@ -481,14 +481,12 @@ public class Agent {
         FlowMemory memory = runner.getMemory();
         memory.clear();
         if (startStep.equals(Step.ROOT_STEP_NAME)) {
-            LOGGER.info("This is toot step");
             // Add the system contexts;
             PromptGenerator pg = new PromptGenerator();
             List<String> systemInstructions = pg.getInitialStepSystemInstructionsForRoot(_mContext, _mToolNames,
                     _mAgentCapabilities, _mVariableDefs);
             // For root step, we will have additional information.
             List<String> additionalContextInstructions = sg.getStep(startStep).additionalContextInstructions;
-            LOGGER.info("Deciding to add additional system instrctions");
             if (additionalContextInstructions != null) {
                 // This is dynamic additional instructions.
                 LOGGER.info("Adding additional instructions. Size {}",systemInstructions.size());
