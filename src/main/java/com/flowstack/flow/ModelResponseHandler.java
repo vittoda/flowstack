@@ -4,12 +4,15 @@ import com.flowstack.models.ModelJSONResponse;
 import com.flowstack.models.ModelResponse;
 import com.flowstack.models.ModelThinkingResponse;
 import com.flowstack.models.ModelToolResponse;
+import com.flowstack.models.ModelToolResponse.ToolCall;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowstack.JsonUtils;
 import com.flowstack.mcp.MCPRegistry;
 import com.flowstack.mcp.ToolCallResponse;
+
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +25,8 @@ public class ModelResponseHandler {
             ModelResponse response) throws FlowException {
 
         if (response == null) {
-            LOGGER.warn("Response is null for session '{}', step '{}'", flowRunner.getSessionId(), stepRunInstance.getStepDefinition().name);
+            LOGGER.warn("Response is null for session '{}', step '{}'", flowRunner.getSessionId(),
+                    stepRunInstance.getStepDefinition().name);
             flowRunner.currentStepFailed(StepRunInstance.FAIL_REASON_INVALID_RESPONSE, "No response from the model");
             return;
         }
@@ -54,8 +58,21 @@ public class ModelResponseHandler {
                 // We will be adding as one for current
                 StepGroup sg = new StepGroup();
                 Step firstStep = sg.addSteps(steps, flowRunner.getModelName());
+
+                //Add end flow step.
+                ArrayList<Step> lastSteps= sg.getAllLastSteps();
+                if(lastSteps.size() == 0) {
+                    LOGGER.error("Steps generated does not have a last step.  This may cause infinite loop");
+                    flowRunner.currentStepFailed(StepRunInstance.FAIL_REASON_INVALID_RESPONSE,
+                            validationErrors.toString());
+                    return;
+                }
+
+                sg.addEndFlowStep(flowRunner.getModelName(), lastSteps);
+
                 String lastPrompt = stepRunInstance.getStepDefinition().instruction;
-                //When a new step group is created, it should not lose the prompt that created it. Usually for the first prompt. 
+                // When a new step group is created, it should not lose the prompt that created
+                // it. Usually for the first prompt.
                 flowRunner.clearAndRunStepGroup(sg, firstStep, lastPrompt);
                 return;
             }
@@ -69,70 +86,65 @@ public class ModelResponseHandler {
 
         } else if (response instanceof ModelToolResponse) {
             ModelToolResponse toolResponse = (ModelToolResponse) response;
-            stepRunInstance.addLogInfo("selectedTool", toolResponse.toolName);
-            if (toolResponse.toolName.equals("agent_runStep")) {
-                // We need special handling for internal tools.
-                String stepName = toolResponse.arguments.get("stepName").asText();
-                flowRunner.runStep(stepName, null);
-                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
-                toolResult.put("status", "Success");
-                toolResult.put("toolResult", "Step '"+stepName+"' triggered");
-                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
-                flowRunner.currentStepCompleted(true);
-                return;
-            } else if (toolResponse.toolName.equals("agent_runErrorStep")) {
-                // We need special handling for internal tools.
-                String stepName = "__error__";
-                flowRunner.runStep(stepName, toolResponse.arguments.get("errorDetails").asText());
-                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
-                toolResult.put("status", "Success");
-                toolResult.put("toolResult", "Error step triggered");
-                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
-                return;
-            } else if (toolResponse.toolName.equals("agent_sendMessage")) {
-                LOGGER.info("Sending message on the channel. Message : {}", toolResponse.arguments.toPrettyString());
-                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
-                ObjectNode r = flowRunner.sendResponse(toolResponse.arguments.get("message").asText());
-                toolResult.put("status","Success");
-                toolResult.set("toolResult",r);
-                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
-                flowRunner.currentStepCompleted(true);
-                return;
-            } else if (toolResponse.toolName.equals("agent_endFlow")) {
-                String result = toolResponse.arguments.get("result").asText();
-                flowRunner.setFlowResult(result);
-                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
-                toolResult.put("status", "Success");
-                toolResult.put("flowResult", result);
-                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
-                flowRunner.currentStepCompleted(true);
-                return;
-            }
-            else if (toolResponse.toolName.equals("agent_setStepContext")) {
-                String stepName = toolResponse.arguments.get("stepName").asText();
-                String context = toolResponse.arguments.get("context").asText();
-                LOGGER.info("Calling agent_setStepContext for step '{}'", stepName);
-                flowRunner.setAdditionalContextForStep(stepName, context);
-                ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
-                toolResult.put("status","Success");
-                toolResult.put("toolResult","Set context");
-                flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult);
-                flowRunner.currentStepCompleted(true);
-                return;
-            }
-            
-            ToolRunner runner = new ToolRunner(toolResponse.toolName, toolResponse.arguments);
+             
+            ArrayNode toolNames = JsonUtils.MAPPER.createArrayNode();
+            for (ToolCall tc : toolResponse.toolCalls) {
+                toolNames.add(tc.toolName);
+                if (tc.toolName.equals("agent_runStep")) {
+                    String stepName = tc.arguments.get("stepName").asText();
+                    flowRunner.runStep(stepName, null);
+                    ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                    toolResult.put("status", "Success");
+                    toolResult.put("toolResult", "Step '" + stepName + "' triggered");
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult);
+                } else if (tc.toolName.equals("agent_runErrorStep")) {
+                    String stepName = "__error__";
+                    flowRunner.runStep(stepName, tc.arguments.get("errorDetails").asText());
+                    ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                    toolResult.put("status", "Success");
+                    toolResult.put("toolResult", "Error step triggered");
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult);
+                } else if (tc.toolName.equals("agent_sendMessage")) {
+                    LOGGER.info("Sending message on the channel. Message : {}",
+                            tc.arguments.toPrettyString());
+                    ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                    ObjectNode r = flowRunner.sendResponse(tc.arguments.get("message").asText());
+                    toolResult.put("status", "Success");
+                    toolResult.set("toolResult", r);
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult);
+                } else if (tc.toolName.equals("agent_endFlow")) {
+                    String result = tc.arguments.get("result").asText();
+                    flowRunner.setFlowResult(result);
+                    ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                    toolResult.put("status", "Success");
+                    toolResult.put("flowResult", result);
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult);
+                } else if (tc.toolName.equals("agent_setStepContext")) {
+                    String stepName = tc.arguments.get("stepName").asText();
+                    String context = tc.arguments.get("context").asText();
+                    LOGGER.info("Calling agent_setStepContext for step '{}'", stepName);
+                    flowRunner.setAdditionalContextForStep(stepName, context);
+                    ObjectNode toolResult = JsonUtils.MAPPER.createObjectNode();
+                    toolResult.put("status", "Success");
+                    toolResult.put("toolResult", "Set context");
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult);
+                } else {
+                    ToolRunner runner = new ToolRunner(tc.toolName, tc.arguments);
 
-            long startTime = System.currentTimeMillis();
-            ToolCallResponse toolResult = runner.run(flowRunner.getAgentInstance());
-            long endTime = System.currentTimeMillis();
-            LOGGER.info("Tool call completed for tool '{}'.", toolResponse.toolName);
-            stepRunInstance.addLogInfo("toolRunDuration", (endTime - startTime));
-            flowRunner.addToolResult(toolResponse.toolName, toolResponse.toolId, toolResult.getResultJSON());
-            // Take the next step from current tool run step, and proceed.
+                    long startTime = System.currentTimeMillis();
+                    ToolCallResponse toolResult = runner.run(flowRunner.getAgentInstance());
+                    long endTime = System.currentTimeMillis();
+                    LOGGER.info("Tool call completed for tool '{}'.", tc.toolName);
+                    stepRunInstance.addLogInfo("toolRunDuration", (endTime - startTime));
+                    flowRunner.addToolResult(tc.toolName, tc.toolId, toolResult.getResultJSON());
+                    // Take the next step from current tool run step, and proceed.
+                }
+            }
+
+            stepRunInstance.addLogInfo("selectedTools", toolNames);
             flowRunner.currentStepCompleted(true);
         } else {
-            LOGGER.warn("Invalid response. '{}'. Content '{}]", response.getClass().getName() ,
+            LOGGER.warn("Invalid response. '{}'. Content '{}]", response.getClass().getName(),
                     response.assistantMessage.toPrettyString());
             flowRunner.currentStepCompleted(true);
         }

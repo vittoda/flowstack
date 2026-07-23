@@ -3,6 +3,7 @@ package com.flowstack.flow;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowstack.agent.AgentMessage;
 import com.flowstack.agent.Orchestrator;
 import com.flowstack.mcp.MCPRegistry;
@@ -86,6 +87,12 @@ public class StepRunInstance {
     }
 
     public void addLogInfo(String key, String v) {
+        if (_mRunLogItem != null) {
+            _mRunLogItem.setAdditionalLogInfo(key, v);
+        }
+    }
+
+    public void addLogInfo(String key, ArrayNode v) {
         if (_mRunLogItem != null) {
             _mRunLogItem.setAdditionalLogInfo(key, v);
         }

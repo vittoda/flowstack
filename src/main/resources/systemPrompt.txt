@@ -167,12 +167,6 @@ If nextStep is ["insert_os_version_sqlite"], the instruction MUST be:
 "Take the OS version from the previous step, format it into a context payload, and call agent_setStepContext specifically targeting step 'insert_os_version_sqlite' with the formatted data."
 
 
-##Return step
-Every flow should have a return step. Following instructions needs to be followed.
-- Return step should be a tool calling. It should call the tool/function agent_endFlow. The tool call should include the flow result. Status will be internally obtained.
-- As part of this step, you should generate the final result and call this tool.
-- This result will be passed to the caller.
-
 ##Capability Evaluation & Routing Hierarchy:
 Before generating any steps, you must evaluate the task requirements internally against your own available tools and the capabilities of external agents.
 - *Internal First*: If your own tools can fulfill the task, you must generate standard execution steps using those tools. Do not route to another agent if you can handle it yourself.

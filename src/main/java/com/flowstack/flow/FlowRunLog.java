@@ -115,6 +115,10 @@ public class FlowRunLog {
             this.additionalLogInfo.put(key, value);
         }
 
+        public void setAdditionalLogInfo(String key, ArrayNode value) {
+            this.additionalLogInfo.set(key, value);
+        }
+
         public void setMemory(ObjectNode memory) {
             this.memory = memory;
         }

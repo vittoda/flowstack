@@ -21,6 +21,7 @@ import com.flowstack.Keys;
 import com.flowstack.flow.FlowMemory;
 import com.flowstack.metrics.MetricsDB;
 import com.flowstack.metrics.MetricsException;
+import com.flowstack.models.ModelToolResponse.ToolCall;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,7 +181,7 @@ public class OpenAI extends ModelConnection {
                 LOGGER.info("Playing back the response");
                 response = getResponse(request, _mRecordingFile + "_requests.json",
                         _mRecordingFile + "_responses.json");
-                if(response == null) {
+                if (response == null) {
                     throw new ModelException("Playback mode returned null response");
                 }
             } else {
@@ -295,29 +296,36 @@ public class OpenAI extends ModelConnection {
             // Push it to the memory.
             memory.addContent(new ModelAssistantMessage(null, tool_calls));
 
-            JsonNode tool = tool_calls.get(0);
-            JsonNode function = tool.get("function");
-            String name = function.get("name").asText();
-            String id = tool.get("id").asText();
-            JsonNode argumentsNode = function.get("arguments");
+            ModelToolResponse mc = new ModelToolResponse(message);
 
-            JsonNode arguments;
-            if (argumentsNode.isObject()) {
-                arguments = argumentsNode;
-            } else {
-                try {
-                    arguments = JsonUtils.MAPPER.readTree(argumentsNode.asText());
-                } catch (JsonProcessingException e) {
-                    throw new ModelException(e);
+            for (int i = 0; i < tool_calls.size(); i++) {
+                JsonNode tool = tool_calls.get(i);
+                JsonNode function = tool.get("function");
+                String name = function.get("name").asText();
+                String id = tool.get("id").asText();
+                JsonNode argumentsNode = function.get("arguments");
+
+                JsonNode arguments;
+                if (argumentsNode.isObject()) {
+                    arguments = argumentsNode;
+                } else {
+                    try {
+                        arguments = JsonUtils.MAPPER.readTree(argumentsNode.asText());
+                    } catch (JsonProcessingException e) {
+                        throw new ModelException(e);
+                    }
                 }
+                ToolCall tc = new ToolCall(name, id, arguments);
+                mc.addToolCall(tc);
             }
-            return new ModelToolResponse(message, name, id, arguments);
+
+            return mc;
         } else if (message.has("content") && (!message.get("content").isNull())) {
             String m = message.get("content").asText();
             memory.addContent(new ModelAssistantMessage(m, null));
             if (jsonRespnse) {
                 try {
-                    JsonNode contentJSON =  JsonUtils.MAPPER.readTree(m);
+                    JsonNode contentJSON = JsonUtils.MAPPER.readTree(m);
                     return new ModelJSONResponse(message, contentJSON);
                 } catch (JsonProcessingException e) {
                     throw new ModelException(e);

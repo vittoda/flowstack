@@ -17,6 +17,7 @@ import com.flowstack.Keys;
 import com.flowstack.flow.FlowMemory;
 import com.flowstack.metrics.MetricsDB;
 import com.flowstack.metrics.MetricsException;
+import com.flowstack.models.ModelToolResponse.ToolCall;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,7 +285,10 @@ public class Gemini extends ModelConnection {
             memory.addContent(new ModelAssistantMessage(null, functionCall));
             String name = functionCall.get("name").asText();
             JsonNode args = functionCall.get("args");
-            return new ModelToolResponse(part, name, null, args);
+            ToolCall tc = new ToolCall(name, null, args);
+            ModelToolResponse mt = new ModelToolResponse(part);
+            mt.addToolCall(tc);
+            return mt;
         }
         memory.addContent(new ModelAssistantMessage(part.toString(), null));
         return new ModelResponse(part);
