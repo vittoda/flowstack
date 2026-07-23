@@ -70,6 +70,9 @@ public class ModelResponseHandler {
 
                 sg.addEndFlowStep(flowRunner.getModelName(), lastSteps);
 
+                //Add et cotext step
+                sg.addSetStepContextStep(flowRunner.getModelName());
+
                 String lastPrompt = stepRunInstance.getStepDefinition().instruction;
                 // When a new step group is created, it should not lose the prompt that created
                 // it. Usually for the first prompt.
