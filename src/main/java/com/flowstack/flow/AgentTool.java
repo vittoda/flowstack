@@ -45,8 +45,8 @@ public class AgentTool {
         ret.add("agent_runStep");
         ret.add("agent_runErrorStep");
         ret.add("agent_sendMessage");
-         ret.add("agent_endFlow");
-         ret.add("agent_setStepContext");
+        //ret.add("agent_endFlow"); //We will not let LLM know this tool. This will be added to a endFlow step
+        ret.add("agent_setStepContext");
 
 
         return ret;
